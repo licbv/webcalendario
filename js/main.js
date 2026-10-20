@@ -11,38 +11,39 @@ async function loadData() {
     const res = await fetch(API_URL + '/latest', {
       method: 'GET',
       headers: {
-        'X-Master-Key': MASTER_KEY,
-        'X-Bin-Meta': 'false'
+        'X-Master-Key': MASTER_KEY
       }
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const data = await res.json();
-    if (data && typeof data === 'object') S = data;
+    const rawData = await res.json();
+    
+    // JSONBin puede devolver los datos directamente o envueltos en "record"
+    const parsedData = rawData.record ? rawData.record : rawData;
 
-    // Normalización de estructuras
-    if (!S.usuarios || !Array.isArray(S.usuarios) || S.usuarios.length === 0) {
-      S.usuarios = [
-        { u: "KRUKI", p: "adMIN", r: "admin", nombre: "Iván Javier Kruk Losada", email: "ivan.kruk@tmoviles.com.ar", grupo: "Administración" }
-      ];
+    if (parsedData && typeof parsedData === 'object') {
+      // Fusionamos validando que no perdamos la nómina de usuarios si en la nube viniera vacía
+      if (Array.isArray(parsedData.usuarios) && parsedData.usuarios.length > 0) {
+        S.usuarios = parsedData.usuarios;
+      }
+      if (Array.isArray(parsedData.conceptos)) S.conceptos = parsedData.conceptos;
+      if (Array.isArray(parsedData.registros)) S.registros = parsedData.registros;
+      if (parsedData.horarios) S.horarios = parsedData.horarios;
+      if (Array.isArray(parsedData.grupos)) S.grupos = parsedData.grupos;
+      if (Array.isArray(parsedData.logs)) S.logs = parsedData.logs;
+      if (parsedData.config) S.config = parsedData.config;
     }
-    if (!S.conceptos || !Array.isArray(S.conceptos)) S.conceptos = JSON.parse(JSON.stringify(CONCEPTOS_INICIALES));
-    if (!S.registros || !Array.isArray(S.registros)) S.registros = [];
-    if (!S.horarios || typeof S.horarios !== 'object') S.horarios = {};
-    if (!S.grupos || !Array.isArray(S.grupos)) S.grupos = ["Migracion", "Triagem", "2daLinea", "0800 TECO", "Chat Provision"];
-    if (!S.logs || !Array.isArray(S.logs)) S.logs = [];
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
-
-    // MANTENER SESIÓN ACTIVA TRAS F5 (Sincronizado después de bajar los datos)
-    checkSavedSession();
-
   } catch(err) {
-    console.error('❌ Error al cargar datos de JSONBin:', err);
-    setSyncStatus('err', 'Error de lectura');
+    console.error('❌ Error al conectar con JSONBin. Se usará la nómina local:', err);
+    setSyncStatus('err', 'Modo Local');
   }
+
+  // Verificar si había sesión iniciada previamente en esta máquina
+  checkSavedSession();
 
   if (currentUser) render();
 }
@@ -89,11 +90,6 @@ function doLogin(evt) {
   evt.preventDefault();
   const uInput = $('#l-user').value.trim().toLowerCase();
   const pInput = $('#l-pass').value.trim();
-
-  if (!S.usuarios || S.usuarios.length === 0) {
-    alert("Cargando datos del servidor... Aguardá un instante e intentá de nuevo.");
-    return;
-  }
 
   const found = S.usuarios.find(x => String(x.u).toLowerCase() === uInput);
 
