@@ -21,21 +21,19 @@ async function loadData() {
     const rawData = await res.json();
     const parsedData = rawData.record ? rawData.record : rawData;
 
-    // Si los datos de la nube son válidos Y TIENEN NÓMINA DE USUARIOS
     if (parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.usuarios) && parsedData.usuarios.length >= 2) {
       S = parsedData;
-      console.log("✅ Datos correctos cargados desde la nube:", S);
+      console.log("✅ Datos cargados correctamente desde la nube:", S);
     } else {
-      // SI LA NUBE SE VACÍA O SE CORROMPE, RESTAURAMOS LA PLANTILLA COMPLETA DE 18 USUARIOS
-      console.warn("⚠️ Advertencia: Base de datos en la nube vacía o corrupta. Restaurando nómina de 18 integrantes...");
+      console.warn("⚠️ Restaurando nómina de 18 integrantes...");
       S = JSON.parse(JSON.stringify(INITIAL_DATA));
-      await saveData(); // Forzamos el guardado de recuperación en la nube
+      await saveData();
     }
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
   } catch(err) {
-    console.error('❌ Error de conexión con JSONBin. Usando respaldo local:', err);
+    console.error('❌ Usando respaldo local:', err);
     if (!S || !S.usuarios || S.usuarios.length < 2) {
       S = JSON.parse(JSON.stringify(INITIAL_DATA));
     }
@@ -59,10 +57,8 @@ function checkSavedSession() {
 }
 
 async function saveData() {
-  // BLINDAJE DE SEGURIDAD: Impedir guardar si la nómina está vacía
   if (!S || !Array.isArray(S.usuarios) || S.usuarios.length < 2) {
-    console.error("🛑 GUARDADO ABORTADO: Se intentó guardar un estado sin usuarios.");
-    alert("❌ Error: Se detectó un intento de guardar la base de datos vacía. Operación cancelada para proteger tus datos.");
+    alert("❌ Error: Se detectó un intento de guardar la base de datos vacía.");
     return;
   }
 
@@ -86,7 +82,7 @@ async function saveData() {
     setSyncStatus('ok', 'Guardado en Nube');
     setTimeout(() => setSyncStatus('ok', 'Sincronizado'), 2000);
   } catch(err) {
-    console.error('❌ Error al guardar en JSONBin:', err);
+    console.error('❌ Error al guardar:', err);
     setSyncStatus('err', 'Error al guardar');
     alert(`❌ No se pudo guardar en la nube:\n${err.message}`);
   }
@@ -98,7 +94,7 @@ function doLogin(evt) {
   const pInput = $('#l-pass').value.trim();
 
   if (!S.usuarios || S.usuarios.length === 0) {
-    alert("Cargando datos del servidor... Aguardá un instante e intentá de nuevo.");
+    alert("Cargando datos del servidor...");
     return;
   }
 
@@ -127,19 +123,11 @@ function saveNewPwd(evt) {
   const confP = $('#pwd-confirm').value.trim();
 
   if (oldP !== currentUser.p) {
-    const errBox = $('#pwd-err');
-    if (errBox) {
-      errBox.textContent = 'La contraseña actual es incorrecta.';
-      errBox.style.display = 'block';
-    }
+    alert('La contraseña actual es incorrecta.');
     return;
   }
   if (newP !== confP) {
-    const errBox = $('#pwd-err');
-    if (errBox) {
-      errBox.textContent = 'Las nuevas contraseñas no coinciden.';
-      errBox.style.display = 'block';
-    }
+    alert('Las nuevas contraseñas no coinciden.');
     return;
   }
 
@@ -176,6 +164,14 @@ function showApp() {
   if (monthInput) {
     monthInput.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
   }
+
+  // LISTENERS DEL MENÚ LATERAL DE NAVEGACIÓN
+  document.querySelectorAll('.nav-i').forEach(btn => {
+    btn.onclick = function() {
+      V = this.dataset.v;
+      render();
+    };
+  });
 
   render();
 }
