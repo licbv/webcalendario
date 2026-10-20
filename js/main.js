@@ -11,38 +11,34 @@ async function loadData() {
     const res = await fetch(API_URL + '/latest', {
       method: 'GET',
       headers: {
-        'X-Master-Key': MASTER_KEY
+        'X-Master-Key': MASTER_KEY,
+        'X-Bin-Meta': 'false'
       }
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const rawData = await res.json();
-    
-    // JSONBin puede devolver los datos directamente o envueltos en "record"
     const parsedData = rawData.record ? rawData.record : rawData;
 
-    if (parsedData && typeof parsedData === 'object') {
-      // Fusionamos validando que no perdamos la nómina de usuarios si en la nube viniera vacía
-      if (Array.isArray(parsedData.usuarios) && parsedData.usuarios.length > 0) {
-        S.usuarios = parsedData.usuarios;
-      }
-      if (Array.isArray(parsedData.conceptos)) S.conceptos = parsedData.conceptos;
-      if (Array.isArray(parsedData.registros)) S.registros = parsedData.registros;
-      if (parsedData.horarios) S.horarios = parsedData.horarios;
-      if (Array.isArray(parsedData.grupos)) S.grupos = parsedData.grupos;
-      if (Array.isArray(parsedData.logs)) S.logs = parsedData.logs;
-      if (parsedData.config) S.config = parsedData.config;
+    // Si la nube responde con una estructura de datos válida, la tomamos completa
+    if (parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.usuarios) && parsedData.usuarios.length > 0) {
+      S = parsedData;
+      console.log("✅ Datos cargados desde JSONBin:", S);
+    } else {
+      // Solo si el BIN está totalmente vacío, guardamos la nómina inicial de 18 integrantes
+      console.warn("⚠️ Base de datos vacía en JSONBin. Inicializando plantilla...");
+      await saveData();
     }
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
   } catch(err) {
-    console.error('❌ Error al conectar con JSONBin. Se usará la nómina local:', err);
-    setSyncStatus('err', 'Modo Local');
+    console.error('❌ Error al conectar con JSONBin:', err);
+    setSyncStatus('err', 'Modo Offline');
   }
 
-  // Verificar si había sesión iniciada previamente en esta máquina
+  // Restaurar sesión activa
   checkSavedSession();
 
   if (currentUser) render();
@@ -50,7 +46,7 @@ async function loadData() {
 
 function checkSavedSession() {
   const savedUser = localStorage.getItem('cper_logged_user');
-  if (savedUser) {
+  if (savedUser && !currentUser) {
     const found = S.usuarios.find(x => String(x.u).toLowerCase() === savedUser.toLowerCase());
     if (found) {
       currentUser = found;
@@ -80,9 +76,9 @@ async function saveData() {
     setSyncStatus('ok', 'Guardado en Nube');
     setTimeout(() => setSyncStatus('ok', 'Sincronizado'), 2000);
   } catch(err) {
-    console.error('❌ Error al guardar:', err);
+    console.error('❌ Error al guardar en JSONBin:', err);
     setSyncStatus('err', 'Error al guardar');
-    alert(`❌ Error al guardar datos en la nube:\n${err.message}`);
+    alert(`❌ No se pudo guardar en la nube:\n${err.message}`);
   }
 }
 
@@ -90,6 +86,11 @@ function doLogin(evt) {
   evt.preventDefault();
   const uInput = $('#l-user').value.trim().toLowerCase();
   const pInput = $('#l-pass').value.trim();
+
+  if (!S.usuarios || S.usuarios.length === 0) {
+    alert("Cargando datos del servidor... Aguardá un instante e intentá de nuevo.");
+    return;
+  }
 
   const found = S.usuarios.find(x => String(x.u).toLowerCase() === uInput);
 
