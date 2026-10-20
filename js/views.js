@@ -45,7 +45,7 @@ function renderMatriz() {
       <table>
         <thead>
           <tr>
-            <th class="r">Operador / Horario</th>
+            <th class="r">Operador / Horario Base</th>
             ${Array.from({length: daysCount}, (_, i) => {
               const day = i + 1;
               const { isNonWorking, isHoliday } = isWeekendOrHoliday(currentYear, currentMonth, day);
@@ -58,14 +58,14 @@ function renderMatriz() {
   `;
 
   if (usuariosFiltrados.length === 0) {
-    html += `<tr><td colspan="${daysCount + 1}" style="padding:20px; color:var(--muted); text-align:center;">No hay operadores registrados o cargados en este grupo.</td></tr>`;
+    html += `<tr><td colspan="${daysCount + 1}" style="padding:20px; color:var(--muted); text-align:center;">No hay operadores registrados en este grupo.</td></tr>`;
   } else {
     usuariosFiltrados.forEach(u => {
       const uKey = String(u.u || '').toLowerCase();
       const hor = (S.horarios && S.horarios[uKey]) ? S.horarios[uKey] : { entrada: "07:00", hsDiarias: 8 };
-      const entrada = hor.entrada || "07:00";
-      const hsDiarias = hor.hsDiarias || 8;
-      const salida = calcularHoraSalida(entrada, hsDiarias);
+      const entradaBase = hor.entrada || "07:00";
+      const hsDiariasBase = hor.hsDiarias || 8;
+      const salidaBase = calcularHoraSalida(entradaBase, hsDiariasBase);
 
       const isOwnProfile = currentUser && (currentUser.u.toLowerCase() === uKey || currentUser.r === 'admin');
 
@@ -74,7 +74,7 @@ function renderMatriz() {
           <td class="r">
             <b>${e(u.nombre)}</b>
             <div style="font-size:10px; color:var(--muted)">
-              [${e(u.grupo || 'Sin Grupo')}] 🕒 ${entrada} a ${salida} (${hsDiarias}hs)
+              [${e(u.grupo || 'Sin Grupo')}] 🕒 Base: ${entradaBase} a ${salidaBase}
             </div>
           </td>
       `;
@@ -85,21 +85,21 @@ function renderMatriz() {
         const conceptoObj = reg ? (S.conceptos || []).find(c => c.id === reg.concepto) : null;
         const { isNonWorking, isHoliday } = isWeekendOrHoliday(currentYear, currentMonth, day);
 
-        let cellStyle = "";
+        let cellStyle = "cursor:pointer;";
         if (reg && conceptoObj) {
           cellStyle = `background:${conceptoObj.color}; color:${conceptoObj.textColor}; font-weight:700; cursor:pointer;`;
         } else if (isHoliday) {
           cellStyle = `background:#FEE2E2; color:#991B1B; cursor:pointer;`;
         } else if (isNonWorking) {
           cellStyle = `background:#F1F5F9; color:#64748B; cursor:pointer;`;
-        } else {
-          cellStyle = `cursor:pointer;`;
         }
 
+        const horarioTexto = reg && reg.horaInicio ? ` (${reg.horaInicio}-${reg.horaFin})` : '';
+
         html += `<td style="${cellStyle}" 
-                     title="${conceptoObj ? conceptoObj.nombre + (reg.horas ? ' ('+reg.horas+'hs)' : '') : isHoliday ? 'Feriado' : 'Día Laboral'}"
+                     title="${conceptoObj ? conceptoObj.nombre + horarioTexto : isHoliday ? 'Feriado' : 'Día Laboral'}"
                      ${isOwnProfile ? `onclick="toggleCellConcept('${u.u}', '${dateStr}')"` : ''}>
-                   ${conceptoObj ? `<b>${conceptoObj.id}</b>` : '-'}
+                   ${conceptoObj ? `<b>${conceptoObj.id}</b><div style="font-size:9px; font-weight:normal;">${reg.horaInicio || ''}</div>` : '-'}
                  </td>`;
       }
       html += `</tr>`;
@@ -116,26 +116,33 @@ function toggleCellConcept(userU, dateStr) {
   const existingIndex = S.registros.findIndex(r => String(r.u).toLowerCase() === uKey && r.fecha === dateStr);
   const currentReg = existingIndex >= 0 ? S.registros[existingIndex] : null;
 
+  const horBase = (S.horarios && S.horarios[uKey]) ? S.horarios[uKey] : { entrada: "07:00", hsDiarias: 8 };
+  const salidaBase = calcularHoraSalida(horBase.entrada || "07:00", horBase.hsDiarias || 8);
+
   if (!currentReg) {
-    let hs = 0;
-    if (activeConcepto === 'HEX') {
-      hs = parseInt(prompt("Cantidad de Horas Extras a cargar:", "2")) || 0;
-      if (hs <= 0) return;
-    }
-    S.registros.push({ u: uKey, fecha: dateStr, concepto: activeConcepto, horas: hs });
-    logAction(`Cargó [${activeConcepto}] para ${uKey} en fecha ${dateStr}`);
+    const rangoHorario = prompt(`Horario para ${activeConcepto} (${dateStr}):\nFormato: HH:MM a HH:MM`, `${horBase.entrada} a ${salidaBase}`);
+    if (rangoHorario === null) return;
+
+    const parts = rangoHorario.split('a').map(s => s.trim());
+    const horaInicio = parts[0] || horBase.entrada;
+    const horaFin = parts[1] || salidaBase;
+
+    S.registros.push({ u: uKey, fecha: dateStr, concepto: activeConcepto, horaInicio, horaFin });
+    logAction(`Cargó [${activeConcepto}] (${horaInicio}-${horaFin}) para ${uKey} el ${dateStr}`);
   } else {
     if (currentReg.concepto === activeConcepto) {
       S.registros.splice(existingIndex, 1);
-      logAction(`Quitó [${activeConcepto}] de ${uKey} en fecha ${dateStr}`);
+      logAction(`Quitó [${activeConcepto}] de ${uKey} el ${dateStr}`);
     } else {
-      let hs = 0;
-      if (activeConcepto === 'HEX') {
-        hs = parseInt(prompt("Cantidad de Horas Extras a cargar:", "2")) || 0;
-        if (hs <= 0) return;
-      }
-      S.registros[existingIndex] = { u: uKey, fecha: dateStr, concepto: activeConcepto, horas: hs };
-      logAction(`Cambió concepto a [${activeConcepto}] para ${uKey} el ${dateStr}`);
+      const rangoHorario = prompt(`Nuevo horario para ${activeConcepto} (${dateStr}):`, `${currentReg.horaInicio || horBase.entrada} a ${currentReg.horaFin || salidaBase}`);
+      if (rangoHorario === null) return;
+
+      const parts = rangoHorario.split('a').map(s => s.trim());
+      const horaInicio = parts[0] || horBase.entrada;
+      const horaFin = parts[1] || salidaBase;
+
+      S.registros[existingIndex] = { u: uKey, fecha: dateStr, concepto: activeConcepto, horaInicio, horaFin };
+      logAction(`Cambió a [${activeConcepto}] (${horaInicio}-${horaFin}) para ${uKey} el ${dateStr}`);
     }
   }
 
@@ -158,11 +165,12 @@ function renderPerfil() {
         <p><b>Usuario de Red:</b> ${e(currentUser.u)}</p>
         <p><b>Email Telefónica:</b> ${e(currentUser.email || 'Sin registrar')}</p>
         <p><b>Grupo Operativo:</b> ${e(currentUser.grupo || 'Sin asignar')}</p>
+        <button class="btn" style="margin-top:10px;" onclick="openChangePwdModal()">🔑 Cambiar Mi Contraseña</button>
       </div>
       <div style="background:#F8FAFC; padding:14px; border-radius:8px; border:1px solid var(--border);">
-        <h4 style="margin:0 0 10px;">Configurar Mi Turno de Trabajo</h4>
+        <h4 style="margin:0 0 10px;">Configurar Mi Turno Base</h4>
         <div class="field-group">
-          <label>Hora de Ingreso:</label>
+          <label>Hora de Ingreso Base:</label>
           <input id="p-entrada" type="time" value="${hor.entrada || '07:00'}" onchange="updateHorarioUsuario()">
         </div>
         <div class="field-group">
@@ -185,7 +193,7 @@ function updateHorarioUsuario() {
   if (!S.horarios) S.horarios = {};
   S.horarios[uKey] = { entrada, hsDiarias: hs };
   $('#p-salida').textContent = calcularHoraSalida(entrada, hs);
-  logAction(`Actualizó su turno de trabajo a las ${entrada} (${hs}hs)`);
+  logAction(`Actualizó su turno base a las ${entrada} (${hs}hs)`);
   markUnsaved();
 }
 
@@ -237,13 +245,14 @@ function renderUsuarios() {
 
   return `
   <div class="card">
-    <h3>👥 Gestión de Personal y Usuarios (${(S.usuarios || []).length})</h3>
+    <h3>👥 Gestión de Personal, Horarios Base y Contraseñas (${(S.usuarios || []).length})</h3>
 
     <div style="background:#F8FAFC; padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:16px;">
       <h4 style="margin:0 0 8px;">➕ Dar de Alta Nuevo Integrante</h4>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <input id="nu-u" type="text" placeholder="Usuario de Red (u_red)" style="width:160px;">
-        <input id="nu-nom" type="text" placeholder="Apellido, Nombre" style="width:200px;">
+        <input id="nu-u" type="text" placeholder="Usuario (u_red)" style="width:140px;">
+        <input id="nu-p" type="text" placeholder="Contraseña Inicial" style="width:140px;">
+        <input id="nu-nom" type="text" placeholder="Apellido, Nombre" style="width:180px;">
         <select id="nu-g">
           ${(S.grupos || []).map(g => `<option value="${g}">${g}</option>`).join('')}
         </select>
@@ -251,41 +260,66 @@ function renderUsuarios() {
       </div>
     </div>
 
-    <table style="width:100%; text-align:left;">
+    <table style="width:100%; text-align:left; font-size:12px;">
       <thead>
-        <tr><th>Usuario</th><th>Nombre Completo</th><th>Grupo</th><th>Rol</th><th>Acciones</th></tr>
+        <tr>
+          <th>Usuario</th>
+          <th>Contraseña</th>
+          <th>Nombre Completo</th>
+          <th>Grupo</th>
+          <th>Hora Ingreso</th>
+          <th>Hs Diarias</th>
+          <th>Acciones</th>
+        </tr>
       </thead>
       <tbody>
-        ${(S.usuarios || []).map((u, idx) => `
+        ${(S.usuarios || []).map((u, idx) => {
+          const uKey = u.u.toLowerCase();
+          const hor = (S.horarios && S.horarios[uKey]) ? S.horarios[uKey] : { entrada: "07:00", hsDiarias: 8 };
+          return `
           <tr>
             <td><b>${e(u.u)}</b></td>
-            <td><input type="text" value="${e(u.nombre)}" onchange="S.usuarios[${idx}].nombre=this.value; markUnsaved();"></td>
+            <td><input type="text" value="${e(u.p)}" style="width:100px;" onchange="S.usuarios[${idx}].p=this.value; markUnsaved();"></td>
+            <td><input type="text" value="${e(u.nombre)}" style="width:180px;" onchange="S.usuarios[${idx}].nombre=this.value; markUnsaved();"></td>
             <td>
               <select onchange="S.usuarios[${idx}].grupo=this.value; markUnsaved();">
                 ${(S.grupos || []).map(g => `<option value="${g}" ${u.grupo === g ? 'selected':''}>${g}</option>`).join('')}
               </select>
             </td>
-            <td><b>${e(u.r)}</b></td>
+            <td><input type="time" value="${hor.entrada \vert{}\vert{} '07:00'}" onchange="updateHorarioAdmin('${uKey}', this.value, null)"></td>
+            <td><input type="number" min="1" max="16" value="${hor.hsDiarias \vert{}\vert{} 8}" style="width:60px;" onchange="updateHorarioAdmin('${uKey}', null, this.value)"></td>
             <td>
               ${u.u.toUpperCase() === 'KRUKI' ? '<i>Superadmin</i>' : `<button class="btn" style="background:var(--danger);" onclick="S.usuarios.splice(${idx},1); markUnsaved(); render();">Eliminar</button>`}
             </td>
           </tr>
-        `).join('')}
+        `}).join('')}
       </tbody>
     </table>
   </div>`;
 }
 
+function updateHorarioAdmin(uKey, entrada, hsDiarias) {
+  if (!S.horarios) S.horarios = {};
+  if (!S.horarios[uKey]) S.horarios[uKey] = { entrada: "07:00", hsDiarias: 8 };
+
+  if (entrada !== null) S.horarios[uKey].entrada = entrada;
+  if (hsDiarias !== null) S.horarios[uKey].hsDiarias = parseInt(hsDiarias) || 8;
+
+  logAction(`Admin actualizó el horario base de ${uKey}`);
+  markUnsaved();
+}
+
 function addUsuario() {
   const u = $('#nu-u').value.trim().toLowerCase();
+  const p = $('#nu-p').value.trim() || u;
   const nombre = $('#nu-nom').value.trim();
   const grupo = $('#nu-g').value;
 
-  if (!u || !nombre) return alert('Ingresá usuario de red y nombre.');
+  if (!u || !nombre) return alert('Ingresá usuario y nombre.');
   if (!S.usuarios) S.usuarios = [];
   if (S.usuarios.some(x => x.u.toLowerCase() === u)) return alert('El usuario ya existe.');
 
-  S.usuarios.push({ u, p: u, r: "user", nombre, grupo, email: `${u}@tmoviles.com.ar` });
+  S.usuarios.push({ u, p, r: "user", nombre, grupo, email: `${u}@tmoviles.com.ar` });
   if (!S.horarios) S.horarios = {};
   S.horarios[u] = { entrada: "07:00", hsDiarias: 8 };
   logAction(`Dio de alta al operador "${u}" (${nombre})`);
