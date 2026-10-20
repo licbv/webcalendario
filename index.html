@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión Operativa CPER - Telefónica / Movistar</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-logos">
+        <svg width="140" height="34" viewBox="0 0 120 34" fill="none">
+          <text x="0" y="26" fill="#019DF4" font-family="'Inter', sans-serif" font-weight="700" font-size="28" letter-spacing="-1.4">movistar</text>
+        </svg>
+      </div>
+      <h2>Gestión Operativa CPER</h2>
+      <p>Control de Horarios, Guardias, Francos y Horas Extras</p>
+
+      <form onsubmit="doLogin(event)">
+        <div class="field-group">
+          <label>Usuario / U_RED</label>
+          <input id="l-user" type="text" placeholder="Ej: KRUKI" required autofocus style="text-transform:uppercase;">
+        </div>
+        <div class="field-group">
+          <label>Contraseña</label>
+          <input id="l-pass" type="password" placeholder="Ingresá tu contraseña" required>
+        </div>
+        <button type="submit" class="btn-login">Iniciar Sesión</button>
+        <div id="l-err" class="login-err">Usuario o contraseña incorrectos.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- POPUP / MODAL DE NOVEDADES PARA KRUKI (ADMIN) -->
+  <div id="admin-summary-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box" style="width:580px; max-width:92%;">
+      <h3>📋 Resumen de Actividad Reciente</h3>
+      <p style="color:var(--muted); font-size:12px; margin-top:-6px;">
+        Cambios y cargas realizadas por el personal desde tu último ingreso:
+      </p>
+      <div id="admin-summary-list" class="summary-scroll-box"></div>
+      <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+        <button class="btn" onclick="closeAdminSummary()">Entendido / Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CAMBIO DE CONTRASEÑA -->
+  <div id="pwd-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box" style="width:380px;">
+      <h3>🔑 Cambiar Contraseña</h3>
+      <form onsubmit="saveNewPwd(event)">
+        <div class="field-group">
+          <label>Contraseña Actual</label>
+          <input id="pwd-old" type="password" required>
+        </div>
+        <div class="field-group">
+          <label>Nueva Contraseña</label>
+          <input id="pwd-new" type="password" required>
+        </div>
+        <div class="field-group">
+          <label>Confirmar Nueva Contraseña</label>
+          <input id="pwd-confirm" type="password" required>
+        </div>
+        <div id="pwd-err" class="login-err" style="margin-bottom:12px;"></div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button type="button" onclick="$('#pwd-modal').style.display='none'" style="background:#E2E8F0;">Cancelar</button>
+          <button type="submit" class="btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <aside id="sb" style="display:none;">
+    <div class="sb-brand">
+      <svg width="130" height="32" viewBox="0 0 120 34" fill="none">
+        <text x="0" y="26" fill="#019DF4" font-family="'Inter', sans-serif" font-weight="700" font-size="26">movistar</text>
+      </svg>
+      <small>Gestión CPER</small>
+    </div>
+
+    <button class="nav-i" data-v="m" onclick="V='m';render()">📅 Matriz Operativa</button>
+    <button class="nav-i" data-v="p" onclick="V='p';render()">👤 Mi Perfil / Carga</button>
+    
+    <div class="adm-section" style="display:none;">
+      <div class="sb-grp">Administración (KRUKI)</div>
+      <button class="nav-i" data-v="g" onclick="V='g';render()">⚙️ Grupos y Tipos</button>
+      <button class="nav-i" data-v="u" onclick="V='u';render()">👥 Personal y Usuarios</button>
+      <button class="nav-i" data-v="l" onclick="V='l';render()">📋 Auditoría de Logs</button>
+    </div>
+
+    <div class="sb-foot">
+      <b id="sb-user">KRUKI</b>
+      <span id="sb-role">Administrador</span>
+    </div>
+  </aside>
+
+  <!-- HEADER PRINCIPAL -->
+  <header id="main-header" style="display:none;">
+    <span id="pg-title">Matriz Operativa</span>
+    
+    <label>Grupo:</label>
+    <select id="sel-grupo" onchange="DIST_FILTER=this.value; render();"></select>
+
+    <label>Mes/Año:</label>
+    <input id="sel-month" type="month" onchange="setMonthYear(this.value); render();">
+
+    <span class="sp"></span>
+
+    <button id="btn-save" onclick="saveData()" class="btn-save">💾 Guardar</button>
+    <button onclick="openChangePwdModal()">🔑 Clave</button>
+    <button onclick="doLogout()">🚪 Salir</button>
+
+    <div class="sync-badge">
+      <span id="sync-dot" class="sync-dot"></span>
+      <span id="sync-text">Conectando...</span>
+    </div>
+  </header>
+
+  <main id="app" style="display:none;"></main>
+
+  <!-- JS MODULARIZADO -->
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/views.js"></script>
+  <script src="js/admin-popup.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
