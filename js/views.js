@@ -1,15 +1,14 @@
-// Lista de feriados nacionales en Argentina (formato YYYY-MM-DD)
 const FERIADOS_AR = [
   "2026-01-01", "2026-02-16", "2026-02-17", "2026-03-24", "2026-04-02", "2026-04-03",
   "2026-05-01", "2026-05-25", "2026-06-17", "2026-06-20", "2026-07-09", "2026-08-17",
   "2026-10-12", "2026-11-20", "2026-12-08", "2026-12-25"
 ];
 
-let activeConcepto = "VAC"; // Concepto seleccionado por defecto
+let activeConcepto = "VAC";
 
 function isWeekendOrHoliday(year, month, day) {
   const dateObj = new Date(year, month - 1, day);
-  const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
+  const dayOfWeek = dateObj.getDay();
   const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   const isHoliday = FERIADOS_AR.includes(dateStr);
   return { isNonWorking: dayOfWeek === 0 || dayOfWeek === 6 || isHoliday, isHoliday, dayOfWeek };
@@ -19,10 +18,9 @@ function renderMatriz() {
   const daysCount = getDaysInMonth(currentYear, currentMonth);
   const monthStr = String(currentMonth).padStart(2, '0');
 
-  // Filtramos operadores asegurando comparación limpia
-  const todosUsuarios = Array.isArray(S.usuarios) ? S.usuarios : [];
+  const todosUsuarios = (S && Array.isArray(S.usuarios)) ? S.usuarios : [];
   const usuariosFiltrados = todosUsuarios.filter(u => {
-    if (!u || u.r === 'admin') return false; // El admin KRUKI no figura en la matriz de operadores
+    if (!u || u.r === 'admin') return false;
     if (DIST_FILTER === 'ALL') return true;
     return String(u.grupo || '').trim().toLowerCase() === String(DIST_FILTER).trim().toLowerCase();
   });
@@ -35,7 +33,6 @@ function renderMatriz() {
         <span style="font-size:11px; color:var(--muted)">Mostrando ${usuariosFiltrados.length} operadores</span>
       </div>
 
-      <!-- MENÚ DESPLEGABLE PARA ELEGIR ACTIVIDAD -->
       <div style="background:#F1F5F9; padding:8px 14px; border-radius:8px; display:flex; align-items:center; gap:8px; border:1px solid var(--border);">
         <label style="font-weight:700; font-size:11px; color:var(--navy);">⚡ Modo de Carga Activo:</label>
         <select id="sel-active-concept" onchange="activeConcepto=this.value;" style="font-weight:700;">
@@ -61,12 +58,15 @@ function renderMatriz() {
   `;
 
   if (usuariosFiltrados.length === 0) {
-    html += `<tr><td colspan="${daysCount + 1}" style="padding:20px; color:var(--muted);">No hay operadores registrados en este grupo de trabajo.</td></tr>`;
+    html += `<tr><td colspan="${daysCount + 1}" style="padding:20px; color:var(--muted); text-align:center;">No hay operadores registrados o cargados en este grupo.</td></tr>`;
   } else {
     usuariosFiltrados.forEach(u => {
       const uKey = String(u.u || '').toLowerCase();
       const hor = (S.horarios && S.horarios[uKey]) ? S.horarios[uKey] : { entrada: "07:00", hsDiarias: 8 };
-      const salida = calcularHoraSalida(hor.entrada, hor.hsDiarias);
+      const entrada = hor.entrada || "07:00";
+      const hsDiarias = hor.hsDiarias || 8;
+      const salida = calcularHoraSalida(entrada, hsDiarias);
+
       const isOwnProfile = currentUser && (currentUser.u.toLowerCase() === uKey || currentUser.r === 'admin');
 
       html += `
@@ -74,7 +74,7 @@ function renderMatriz() {
           <td class="r">
             <b>${e(u.nombre)}</b>
             <div style="font-size:10px; color:var(--muted)">
-              [${e(u.grupo || 'Sin Grupo')}] 🕒 ${hor.entrada} a ${salida} (${hor.hsDiarias}hs)
+              [${e(u.grupo || 'Sin Grupo')}] 🕒 ${entrada} a ${salida} (${hsDiarias}hs)
             </div>
           </td>
       `;
@@ -89,9 +89,11 @@ function renderMatriz() {
         if (reg && conceptoObj) {
           cellStyle = `background:${conceptoObj.color}; color:${conceptoObj.textColor}; font-weight:700; cursor:pointer;`;
         } else if (isHoliday) {
-          cellStyle = `background:#FEE2E2; color:#991B1B;`;
+          cellStyle = `background:#FEE2E2; color:#991B1B; cursor:pointer;`;
         } else if (isNonWorking) {
-          cellStyle = `background:#F1F5F9; color:#64748B;`;
+          cellStyle = `background:#F1F5F9; color:#64748B; cursor:pointer;`;
+        } else {
+          cellStyle = `cursor:pointer;`;
         }
 
         html += `<td style="${cellStyle}" 
@@ -145,7 +147,7 @@ function renderPerfil() {
   if (!currentUser) return '';
   const uKey = currentUser.u.toLowerCase();
   const hor = (S.horarios && S.horarios[uKey]) ? S.horarios[uKey] : { entrada: "07:00", hsDiarias: 8 };
-  const salida = calcularHoraSalida(hor.entrada, hor.hsDiarias);
+  const salida = calcularHoraSalida(hor.entrada || "07:00", hor.hsDiarias || 8);
 
   return `
   <div class="card">
@@ -161,11 +163,11 @@ function renderPerfil() {
         <h4 style="margin:0 0 10px;">Configurar Mi Turno de Trabajo</h4>
         <div class="field-group">
           <label>Hora de Ingreso:</label>
-          <input id="p-entrada" type="time" value="${hor.entrada}" onchange="updateHorarioUsuario()">
+          <input id="p-entrada" type="time" value="${hor.entrada || '07:00'}" onchange="updateHorarioUsuario()">
         </div>
         <div class="field-group">
           <label>Duración de Jornada (Horas):</label>
-          <input id="p-hs" type="number" min="1" max="16" value="${hor.hsDiarias}" onchange="updateHorarioUsuario()">
+          <input id="p-hs" type="number" min="1" max="16" value="${hor.hsDiarias || 8}" onchange="updateHorarioUsuario()">
         </div>
         <p style="font-weight:700; color:var(--blue); margin-top:10px;">
           Hora estimada de Salida: <span id="p-salida">${salida}</span>
