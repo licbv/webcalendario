@@ -7,7 +7,6 @@ let FERIADOS_AR = [
 let lastFetchedYear = null;
 let activeConcepto = "VAC";
 
-// Función asíncrona para obtener feriados oficiales de Argentina vía API pública
 async function fetchFeriados(year) {
   if (lastFetchedYear === year) return;
   try {
@@ -17,9 +16,6 @@ async function fetchFeriados(year) {
     if (Array.isArray(data) && data.length > 0) {
       FERIADOS_AR = data.map(function(f) { return f.date; });
       lastFetchedYear = year;
-      console.log('✅ Feriados AR ' + year + ' cargados online:', FERIADOS_AR);
-      
-      // Actualizamos visualmente las cabeceras de feriado si la matriz ya está dibujada
       document.querySelectorAll('th[data-date]').forEach(function(th) {
         const dStr = th.dataset.date;
         if (FERIADOS_AR.includes(dStr)) {
@@ -42,7 +38,6 @@ function isWeekendOrHoliday(year, month, day) {
 }
 
 function renderMatriz() {
-  // Consulta de feriados automáticos sin bloquear la ejecución
   fetchFeriados(currentYear);
 
   const daysCount = getDaysInMonth(currentYear, currentMonth);
@@ -332,4 +327,53 @@ function updateHorarioAdmin(uKey, entrada, hsDiarias) {
   if (!S.horarios[uKey]) S.horarios[uKey] = { entrada: "07:00", hsDiarias: 8 };
 
   if (entrada !== null) S.horarios[uKey].entrada = entrada;
-  if (hs
+  if (hsDiarias !== null) S.horarios[uKey].hsDiarias = parseInt(hsDiarias) || 8;
+
+  logAction("Admin actualizó el horario base de " + uKey);
+  markUnsaved();
+}
+
+function addUsuario() {
+  const u = $('#nu-u').value.trim().toLowerCase();
+  const p = $('#nu-p').value.trim() || u;
+  const nombre = $('#nu-nom').value.trim();
+  const grupo = $('#nu-g').value;
+
+  if (!u || !nombre) return alert('Ingresá usuario y nombre.');
+  if (!S.usuarios) S.usuarios = [];
+  if (S.usuarios.some(function(x) { return x.u.toLowerCase() === u; })) return alert('El usuario ya existe.');
+
+  S.usuarios.push({ u: u, p: p, r: "user", nombre: nombre, grupo: grupo, email: u + "@tmoviles.com.ar" });
+  if (!S.horarios) S.horarios = {};
+  S.horarios[u] = { entrada: "07:00", hsDiarias: 8 };
+  logAction("Dio de alta al operador \"" + u + "\" (" + nombre + ")");
+  markUnsaved();
+  render();
+}
+
+function renderLogs() {
+  if (!currentUser || currentUser.r !== 'admin') return '<div class="card"><p style="color:var(--danger)">Acceso Denegado.</p></div>';
+
+  let html = '<div class="card">' +
+    '<h3>📋 Log de Auditoría y Cambios (' + (S.logs || []).length + ' eventos)</h3>' +
+    '<table style="width:100%; text-align:left;">' +
+      '<thead>' +
+        '<tr><th>Fecha y Hora</th><th>Usuario</th><th>Acción Registrada</th></tr>' +
+      '</thead>' +
+      '<tbody>';
+
+  if ((S.logs || []).length === 0) {
+    html += '<tr><td colspan="3">Sin registros de actividad.</td></tr>';
+  } else {
+    (S.logs || []).forEach(function(l) {
+      html += '<tr>' +
+        '<td style="font-family:monospace; font-size:11px; color:var(--muted);">' + new Date(l.t).toLocaleString('es-AR') + '</td>' +
+        '<td><b>' + e(l.u) + '</b></td>' +
+        '<td>' + e(l.a) + '</td>' +
+      '</tr>';
+    });
+  }
+
+  html += '</tbody></table></div>';
+  return html;
+}
