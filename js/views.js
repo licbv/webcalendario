@@ -1,55 +1,20 @@
-// Memoria en caché para los feriados obtenidos online
-let FERIADOS_AR = [];
-let lastFetchedYear = null;
-let activeConcepto = "VAC";
+const FERIADOS_AR = [
+  "2026-01-01", "2026-02-16", "2026-02-17", "2026-03-24", "2026-04-02", "2026-04-03",
+  "2026-05-01", "2026-05-25", "2026-06-17", "2026-06-20", "2026-07-09", "2026-08-17",
+  "2026-10-12", "2026-11-20", "2026-12-08", "2026-12-25"
+];
 
-// Función asíncrona para obtener feriados oficiales de Argentina vía API pública
-async function fetchFeriados(year) {
-  if (lastFetchedYear === year && FERIADOS_AR.length > 0) return;
-  try {
-    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/AR`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    
-    // Mapeamos las fechas descargadas (formato YYYY-MM-DD)
-    FERIADOS_AR = data.map(f => f.date);
-    lastFetchedYear = year;
-    console.log(`✅ Feriados AR ${year} cargados online:`, FERIADOS_AR);
-  } catch(err) {
-    console.warn(`⚠️ No se pudieron obtener los feriados online para ${year}. Se usará respaldo local.`, err);
-    // Resguardo básico si no hay internet
-    FERIADOS_AR = [
-      `${year}-01-01`, `${year}-03-24`, `${year}-04-02`, `${year}-05-01`, 
-      `${year}-05-25`, `${year}-06-20`, `${year}-07-09`, `${year}-08-17`, 
-      `${year}-10-12`, `${year}-11-20`, `${year}-12-08`, `${year}-12-25`
-    ];
-  }
-}
+let activeConcepto = "VAC";
 
 function isWeekendOrHoliday(year, month, day) {
   const dateObj = new Date(year, month - 1, day);
-  const dayOfWeek = dateObj.getDay(); // 0 = Domingo, 6 = Sábado
+  const dayOfWeek = dateObj.getDay();
   const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   const isHoliday = FERIADOS_AR.includes(dateStr);
   return { isNonWorking: dayOfWeek === 0 || dayOfWeek === 6 || isHoliday, isHoliday, dayOfWeek };
 }
 
 function renderMatriz() {
-  // Disparamos la búsqueda de feriados online para el año seleccionado
-  fetchFeriados(currentYear).then(() => {
-    // Si los feriados terminan de bajar, re-renderizamos suavemente si varió el año
-    const ths = document.querySelectorAll('th[data-date]');
-    if (ths.length > 0) {
-      ths.forEach(th => {
-        const dStr = th.dataset.date;
-        if (FERIADOS_AR.includes(dStr)) {
-          th.style.background = '#FEE2E2';
-          th.title = 'Feriado Nacional';
-        }
-      });
-    }
-  });
-
   const daysCount = getDaysInMonth(currentYear, currentMonth);
   const monthStr = String(currentMonth).padStart(2, '0');
 
