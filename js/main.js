@@ -8,7 +8,7 @@ function setSyncStatus(state, msg) {
 async function loadData() {
   setSyncStatus('busy', 'Conectando...');
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(API_URL + '/latest', {
       method: 'GET',
       headers: {
         'X-Master-Key': MASTER_KEY,
@@ -25,14 +25,14 @@ async function loadData() {
       S = parsedData;
       console.log("✅ Datos cargados correctamente desde la nube:", S);
     } else {
-      console.warn("⚠️ Base de datos en la nube vacía. Cargando nómina de 18 integrantes...");
+      console.warn("⚠️ Restaurando plantilla inicial de 18 integrantes...");
       S = JSON.parse(JSON.stringify(INITIAL_DATA));
       await saveData();
     }
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
-  } catch(err) {
+  } catch (err) {
     console.error('❌ Usando respaldo local:', err);
     if (!S || !S.usuarios || S.usuarios.length < 2) {
       S = JSON.parse(JSON.stringify(INITIAL_DATA));
@@ -58,7 +58,7 @@ function checkSavedSession() {
 
 async function saveData() {
   if (!S || !Array.isArray(S.usuarios) || S.usuarios.length < 2) {
-    alert("❌ Error: Intentó guardarse la base de datos vacía. Proceso detenido.");
+    alert("❌ Error: Se canceló un intento de guardar datos vacíos.");
     return;
   }
 
@@ -80,8 +80,8 @@ async function saveData() {
     if (btn) btn.classList.remove('unsaved');
 
     setSyncStatus('ok', 'Guardado en Nube');
-    setTimeout(function() { setSyncStatus('ok', 'Sincronizado'); }, 2000);
-  } catch(err) {
+    setTimeout(() => setSyncStatus('ok', 'Sincronizado'), 2000);
+  } catch (err) {
     console.error('❌ Error al guardar:', err);
     setSyncStatus('err', 'Error al guardar');
     alert('❌ No se pudo guardar en la nube:\n' + err.message);
@@ -94,7 +94,7 @@ function doLogin(evt) {
   const pInput = $('#l-pass').value.trim();
 
   if (!S.usuarios || S.usuarios.length === 0) {
-    alert("Cargando datos del servidor... Aguarde un segundo.");
+    alert("Cargando datos del servidor...");
     return;
   }
 
@@ -105,7 +105,6 @@ function doLogin(evt) {
     localStorage.setItem('cper_logged_user', currentUser.u);
     $('#l-err').style.display = 'none';
     showApp();
-    if (currentUser.u.toUpperCase() === 'KRUKI') checkAdminSummaryOnLogin();
   } else {
     $('#l-err').style.display = 'block';
   }
@@ -148,7 +147,7 @@ function showApp() {
   $('#main-header').style.display = 'flex';
   $('#app').style.display = 'block';
 
-  document.querySelectorAll('.adm-section').forEach(function(el) {
+  document.querySelectorAll('.adm-section').forEach(el => {
     el.style.display = currentUser.r === 'admin' ? 'block' : 'none';
   });
 
@@ -157,7 +156,7 @@ function showApp() {
 
   const selG = $('#sel-grupo');
   if (selG) {
-    selG.innerHTML = '<option value="ALL">🌐 Todos los Grupos</option>' + (S.grupos || []).map(function(g) { return '<option value="' + g + '">' + g + '</option>'; }).join('');
+    selG.innerHTML = '<option value="ALL">🌐 Todos los Grupos</option>' + (S.grupos || []).map(g => `<option value="${g}">${g}</option>`).join('');
   }
 
   const monthInput = $('#sel-month');
@@ -165,8 +164,7 @@ function showApp() {
     monthInput.value = currentYear + '-' + String(currentMonth).padStart(2, '0');
   }
 
-  // BINDING DE NAVEGACIÓN EN EL MENÚ LATERAL
-  document.querySelectorAll('.nav-i').forEach(function(btn) {
+  document.querySelectorAll('.nav-i').forEach(btn => {
     btn.onclick = function() {
       V = this.dataset.v;
       render();
@@ -186,7 +184,7 @@ function render() {
   else if (V === 'u') app.innerHTML = renderUsuarios();
   else if (V === 'l') app.innerHTML = renderLogs();
 
-  document.querySelectorAll('.nav-i').forEach(function(b) {
+  document.querySelectorAll('.nav-i').forEach(b => {
     b.classList.toggle('on', b.dataset.v === V);
   });
 }
