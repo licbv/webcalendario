@@ -26,7 +26,7 @@ async function loadData() {
       S = parsedData;
       console.log("✅ Datos cargados desde JSONBin:", S);
     } else {
-      // Solo si el BIN está totalmente vacío, guardamos la nómina inicial de 18 integrantes
+      // Solo si el BIN está totalmente vacío, guardamos la plantilla inicial
       console.warn("⚠️ Base de datos vacía en JSONBin. Inicializando plantilla...");
       await saveData();
     }
@@ -38,7 +38,7 @@ async function loadData() {
     setSyncStatus('err', 'Modo Offline');
   }
 
-  // Restaurar sesión activa
+  // Restaurar sesión activa si existía
   checkSavedSession();
 
   if (currentUser) render();
@@ -103,6 +103,45 @@ function doLogin(evt) {
   } else {
     $('#l-err').style.display = 'block';
   }
+}
+
+function openChangePwdModal() {
+  const modal = $('#pwd-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function saveNewPwd(evt) {
+  evt.preventDefault();
+  const oldP = $('#pwd-old').value.trim();
+  const newP = $('#pwd-new').value.trim();
+  const confP = $('#pwd-confirm').value.trim();
+
+  if (oldP !== currentUser.p) {
+    const errBox = $('#pwd-err');
+    if (errBox) {
+      errBox.textContent = 'La contraseña actual es incorrecta.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+  if (newP !== confP) {
+    const errBox = $('#pwd-err');
+    if (errBox) {
+      errBox.textContent = 'Las nuevas contraseñas no coinciden.';
+      errBox.style.display = 'block';
+    }
+    return;
+  }
+
+  currentUser.p = newP;
+  const userIdx = S.usuarios.findIndex(u => u.u.toLowerCase() === currentUser.u.toLowerCase());
+  if (userIdx >= 0) S.usuarios[userIdx].p = newP;
+
+  const modal = $('#pwd-modal');
+  if (modal) modal.style.display = 'none';
+  logAction(`Cambió su contraseña de acceso`);
+  saveData();
+  alert('✅ Contraseña actualizada correctamente.');
 }
 
 function showApp() {
