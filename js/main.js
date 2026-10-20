@@ -12,37 +12,32 @@ async function loadData() {
       method: 'GET',
       headers: {
         'X-Master-Key': MASTER_KEY,
-        'X-Bin-Meta': 'false' // Trae directamente el objeto de datos sin metadatos
+        'X-Bin-Meta': 'false'
       }
     });
 
-    if (!res.ok) {
-      throw new Error(`Error HTTP: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
-    
-    if (data && typeof data === 'object') {
-      S = data;
-    }
+    if (data && typeof data === 'object') S = data;
 
-    // Aseguramos arreglos mínimos en caso de que el Bin esté vacío
+    // Estructuras de resguardo por si el bin está inicializado parcialmente
     if (!S.usuarios || !Array.isArray(S.usuarios) || S.usuarios.length === 0) {
       S.usuarios = [
-        { u: "KRUKI", p: "adMIN", r: "admin", nombre: "Iván Javier Kruk Losada", email: "ivan.kruk@tmoviles.com.ar" }
+        { u: "KRUKI", p: "adMIN", r: "admin", nombre: "Iván Javier Kruk Losada", email: "ivan.kruk@tmoviles.com.ar", grupo: "Administración" }
       ];
     }
-    if (!S.conceptos) S.conceptos = JSON.parse(JSON.stringify(CONCEPTOS_INICIALES));
-    if (!S.registros) S.registros = [];
+    if (!S.conceptos || !Array.isArray(S.conceptos)) S.conceptos = JSON.parse(JSON.stringify(CONCEPTOS_INICIALES));
+    if (!S.registros || !Array.isArray(S.registros)) S.registros = [];
     if (!S.horarios) S.horarios = {};
-    if (!S.logs) S.logs = [];
+    if (!S.grupos || !Array.isArray(S.grupos)) S.grupos = ["Migracion", "Triagem", "2daLinea", "0800 TECO", "Chat Provision"];
+    if (!S.logs || !Array.isArray(S.logs)) S.logs = [];
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
-    console.log("✅ Datos cargados correctamente desde JSONBin:", S);
   } catch(err) {
     console.error('❌ Error al cargar datos de JSONBin:', err);
-    setSyncStatus('err', 'Error de lectura');
+    setSyncStatus('err', 'Error de red');
   }
 
   if (currentUser) render();
@@ -60,41 +55,38 @@ async function saveData() {
       body: JSON.stringify(S)
     });
 
-    if (!res.ok) {
-      throw new Error(`Error HTTP: ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     hasUnsavedChanges = false;
     const btn = $('#btn-save');
     if (btn) btn.classList.remove('unsaved');
-    
+
     setSyncStatus('ok', 'Guardado en Nube');
     setTimeout(() => setSyncStatus('ok', 'Sincronizado'), 2000);
-    console.log("✅ Datos guardados con éxito en JSONBin");
   } catch(err) {
-    console.error('❌ Error al guardar en JSONBin:', err);
+    console.error('❌ Error al guardar:', err);
     setSyncStatus('err', 'Error al guardar');
-    alert(`❌ No se pudo guardar en la nube.\nDetalle: ${err.message}\n\nComprobá que tu conexión esté activa y que el BIN_ID sea correcto.`);
+    alert(`❌ Error al guardar datos en la nube:\n${err.message}`);
   }
 }
 
 function doLogin(evt) {
   evt.preventDefault();
-  const uInput = $('#l-user').value.trim().toUpperCase();
+  const uInput = $('#l-user').value.trim().toLowerCase();
   const pInput = $('#l-pass').value.trim();
 
   if (!S.usuarios || S.usuarios.length === 0) {
-    alert("Cargando datos de la base de datos... Por favor intentá en un instante.");
+    alert("Cargando datos del servidor... Aguardá un instante e intentá de nuevo.");
     return;
   }
 
-  const found = S.usuarios.find(x => x.u.toUpperCase() === uInput);
+  const found = S.usuarios.find(x => String(x.u).toLowerCase() === uInput);
 
-  if (found && found.p === pInput) {
+  if (found && String(found.p) === pInput) {
     currentUser = found;
     $('#l-err').style.display = 'none';
     showApp();
-    if (currentUser.u === 'KRUKI') checkAdminSummaryOnLogin();
+    if (currentUser.u.toUpperCase() === 'KRUKI') checkAdminSummaryOnLogin();
   } else {
     $('#l-err').style.display = 'block';
   }
@@ -129,7 +121,13 @@ function showApp() {
 function render() {
   const app = $('#app');
   if (!app) return;
-  app.innerHTML = V === 'm' ? renderMatriz() : V === 'p' ? renderPerfil() : V === 'g' ? renderAdminConfig() : '<h2>Vista en desarrollo</h2>';
+
+  if (V === 'm') app.innerHTML = renderMatriz();
+  else if (V === 'p') app.innerHTML = renderPerfil();
+  else if (V === 'g') app.innerHTML = renderAdminConfig();
+  else if (V === 'u') app.innerHTML = renderUsuarios();
+  else if (V === 'l') app.innerHTML = renderLogs();
+
   document.querySelectorAll('.nav-i').forEach(b => b.classList.toggle('on', b.dataset.v === V));
 }
 
