@@ -21,24 +21,27 @@ async function loadData() {
     const rawData = await res.json();
     const parsedData = rawData.record ? rawData.record : rawData;
 
-    // Si la nube responde con una estructura de datos válida, la tomamos completa
-    if (parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.usuarios) && parsedData.usuarios.length > 0) {
+    // Si los datos de la nube son válidos Y TIENEN NÓMINA DE USUARIOS
+    if (parsedData && typeof parsedData === 'object' && Array.isArray(parsedData.usuarios) && parsedData.usuarios.length >= 2) {
       S = parsedData;
-      console.log("✅ Datos cargados desde JSONBin:", S);
+      console.log("✅ Datos correctos cargados desde la nube:", S);
     } else {
-      // Solo si el BIN está totalmente vacío, guardamos la plantilla inicial
-      console.warn("⚠️ Base de datos vacía en JSONBin. Inicializando plantilla...");
-      await saveData();
+      // SI LA NUBE SE VACÍA O SE CORROMPE, RESTAURAMOS LA PLANTILLA COMPLETA DE 18 USUARIOS
+      console.warn("⚠️ Advertencia: Base de datos en la nube vacía o corrupta. Restaurando nómina de 18 integrantes...");
+      S = JSON.parse(JSON.stringify(INITIAL_DATA));
+      await saveData(); // Forzamos el guardado de recuperación en la nube
     }
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
   } catch(err) {
-    console.error('❌ Error al conectar con JSONBin:', err);
+    console.error('❌ Error de conexión con JSONBin. Usando respaldo local:', err);
+    if (!S || !S.usuarios || S.usuarios.length < 2) {
+      S = JSON.parse(JSON.stringify(INITIAL_DATA));
+    }
     setSyncStatus('err', 'Modo Offline');
   }
 
-  // Restaurar sesión activa si existía
   checkSavedSession();
 
   if (currentUser) render();
@@ -56,6 +59,13 @@ function checkSavedSession() {
 }
 
 async function saveData() {
+  // BLINDAJE DE SEGURIDAD: Impedir guardar si la nómina está vacía
+  if (!S || !Array.isArray(S.usuarios) || S.usuarios.length < 2) {
+    console.error("🛑 GUARDADO ABORTADO: Se intentó guardar un estado sin usuarios.");
+    alert("❌ Error: Se detectó un intento de guardar la base de datos vacía. Operación cancelada para proteger tus datos.");
+    return;
+  }
+
   setSyncStatus('busy', 'Guardando...');
   try {
     const res = await fetch(API_URL, {
