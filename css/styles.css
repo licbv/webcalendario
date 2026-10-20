@@ -1,112 +1,52 @@
 /* ==========================================================================
-   DISEÑO RESPONSIVO (Móvil, Tablet y Escritorio)
+   AJUSTES RESPONSIVOS SUTILES
    ========================================================================== */
 
-/* Ajustes generales para pantallas pequeñas (Smartphones y Tablets) */
 @media screen and (max-width: 768px) {
-  
-  /* Layout principal en columna */
   body {
     flex-direction: column !important;
   }
 
-  /* Menú lateral adaptado a cabecera superior */
+  /* El sidebar pasa a ser una barra superior bien integrada */
   #sb {
     width: 100% !important;
     min-width: 100% !important;
-    height: auto !important;
-    padding: 10px 14px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    padding: 12px 16px !important;
+    box-sizing: border-box !important;
   }
 
-  /* Ajuste del logo y bloque de usuario en móvil */
-  #sb .logo-box {
-    margin-bottom: 8px !important;
-  }
-
-  /* Los botones del menú lateral se ordenan en una barra horizontal deslizable */
   #sb nav {
     display: flex !important;
     flex-direction: row !important;
     overflow-x: auto !important;
-    gap: 6px !important;
+    gap: 8px !important;
     padding-bottom: 4px !important;
-    white-space: nowrap !important;
   }
 
   #sb nav .nav-i {
+    white-space: nowrap !important;
+    font-size: 12px !important;
     padding: 8px 12px !important;
-    font-size: 11px !important;
-    border-radius: 6px !important;
-    flex-shrink: 0 !important;
   }
 
-  /* Ocultar etiquetas largas en menú inferior de red de usuarios si hiciera falta */
-  .adm-section-title {
-    display: none !important;
-  }
-
-  /* Contenido principal ocupa el 100% del ancho */
   main {
-    padding: 10px !important;
-    width: 100% !important;
-    overflow-x: hidden !important;
-  }
-
-  /* Tarjetas y contenedores */
-  .card {
     padding: 12px !important;
-    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
   }
 
-  /* Ajuste de grillas de 2 columnas a 1 columna en móvil */
-  div[style*="grid-template-columns"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Matriz Operativa: Scroll horizontal súper suave con fijación de nombres */
+  /* Tabla de la Matriz Operativa con Scroll Táctil */
   .wrap {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    border-radius: 6px !important;
   }
 
-  table {
-    font-size: 11px !important;
-  }
-
-  /* Fijar la primera columna (Operador) al hacer scroll a la derecha */
+  /* Mantener fijo el nombre del operador a la izquierda al deslizar */
   th.r, td.r {
     position: sticky !important;
     left: 0 !important;
     background: #FFFFFF !important;
     z-index: 2 !important;
     box-shadow: 2px 0 5px rgba(0,0,0,0.05) !important;
-    min-width: 130px !important;
-    max-width: 150px !important;
-  }
-
-  /* Ajuste de celdas de la matriz para que no sean gigantes en el cel */
-  td, th {
-    padding: 6px 4px !important;
-    min-width: 34px !important;
-    text-align: center !important;
-  }
-
-  /* Formularios y controles del header superior */
-  #main-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-  }
-
-  #main-header .right-controls {
-    justify-content: space-between !important;
-  }
-
-  /* Controles de selección de concepto y grupo en celular */
-  #sel-active-concept, #sel-grupo, #sel-month {
-    width: 100% !important;
-    font-size: 12px !important;
   }
 }
