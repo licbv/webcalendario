@@ -21,7 +21,7 @@ async function loadData() {
     const data = await res.json();
     if (data && typeof data === 'object') S = data;
 
-    // Estructuras de resguardo por si el bin está inicializado parcialmente
+    // Estructuras de resguardo
     if (!S.usuarios || !Array.isArray(S.usuarios) || S.usuarios.length === 0) {
       S.usuarios = [
         { u: "KRUKI", p: "adMIN", r: "admin", nombre: "Iván Javier Kruk Losada", email: "ivan.kruk@tmoviles.com.ar", grupo: "Administración" }
@@ -35,12 +35,27 @@ async function loadData() {
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
+
+    // MANTENER SESIÓN ACTIVA TRAS F5
+    checkSavedSession();
+
   } catch(err) {
     console.error('❌ Error al cargar datos de JSONBin:', err);
     setSyncStatus('err', 'Error de red');
   }
 
   if (currentUser) render();
+}
+
+function checkSavedSession() {
+  const savedUser = localStorage.getItem('cper_logged_user');
+  if (savedUser && !currentUser) {
+    const found = S.usuarios.find(x => String(x.u).toLowerCase() === savedUser.toLowerCase());
+    if (found) {
+      currentUser = found;
+      showApp();
+    }
+  }
 }
 
 async function saveData() {
@@ -84,6 +99,7 @@ function doLogin(evt) {
 
   if (found && String(found.p) === pInput) {
     currentUser = found;
+    localStorage.setItem('cper_logged_user', currentUser.u); // Guardamos la sesión
     $('#l-err').style.display = 'none';
     showApp();
     if (currentUser.u.toUpperCase() === 'KRUKI') checkAdminSummaryOnLogin();
@@ -132,6 +148,7 @@ function render() {
 }
 
 function doLogout() {
+  localStorage.removeItem('cper_logged_user'); // Borramos la sesión al salir explícitamente
   currentUser = null;
   location.reload();
 }
