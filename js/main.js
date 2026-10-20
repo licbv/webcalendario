@@ -21,7 +21,7 @@ async function loadData() {
     const data = await res.json();
     if (data && typeof data === 'object') S = data;
 
-    // Estructuras de resguardo
+    // Normalización de estructuras
     if (!S.usuarios || !Array.isArray(S.usuarios) || S.usuarios.length === 0) {
       S.usuarios = [
         { u: "KRUKI", p: "adMIN", r: "admin", nombre: "Iván Javier Kruk Losada", email: "ivan.kruk@tmoviles.com.ar", grupo: "Administración" }
@@ -29,19 +29,19 @@ async function loadData() {
     }
     if (!S.conceptos || !Array.isArray(S.conceptos)) S.conceptos = JSON.parse(JSON.stringify(CONCEPTOS_INICIALES));
     if (!S.registros || !Array.isArray(S.registros)) S.registros = [];
-    if (!S.horarios) S.horarios = {};
+    if (!S.horarios || typeof S.horarios !== 'object') S.horarios = {};
     if (!S.grupos || !Array.isArray(S.grupos)) S.grupos = ["Migracion", "Triagem", "2daLinea", "0800 TECO", "Chat Provision"];
     if (!S.logs || !Array.isArray(S.logs)) S.logs = [];
 
     hasUnsavedChanges = false;
     setSyncStatus('ok', 'Sincronizado');
 
-    // MANTENER SESIÓN ACTIVA TRAS F5
+    // MANTENER SESIÓN ACTIVA TRAS F5 (Sincronizado después de bajar los datos)
     checkSavedSession();
 
   } catch(err) {
     console.error('❌ Error al cargar datos de JSONBin:', err);
-    setSyncStatus('err', 'Error de red');
+    setSyncStatus('err', 'Error de lectura');
   }
 
   if (currentUser) render();
@@ -49,7 +49,7 @@ async function loadData() {
 
 function checkSavedSession() {
   const savedUser = localStorage.getItem('cper_logged_user');
-  if (savedUser && !currentUser) {
+  if (savedUser) {
     const found = S.usuarios.find(x => String(x.u).toLowerCase() === savedUser.toLowerCase());
     if (found) {
       currentUser = found;
@@ -99,7 +99,7 @@ function doLogin(evt) {
 
   if (found && String(found.p) === pInput) {
     currentUser = found;
-    localStorage.setItem('cper_logged_user', currentUser.u); // Guardamos la sesión
+    localStorage.setItem('cper_logged_user', currentUser.u);
     $('#l-err').style.display = 'none';
     showApp();
     if (currentUser.u.toUpperCase() === 'KRUKI') checkAdminSummaryOnLogin();
@@ -148,7 +148,7 @@ function render() {
 }
 
 function doLogout() {
-  localStorage.removeItem('cper_logged_user'); // Borramos la sesión al salir explícitamente
+  localStorage.removeItem('cper_logged_user');
   currentUser = null;
   location.reload();
 }
