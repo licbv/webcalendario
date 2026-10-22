@@ -98,6 +98,19 @@ table.t tr.off td{opacity:.5}
 /* calendario */
 .tb{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .legend{display:flex;gap:6px;flex-wrap:wrap}
+.yr{border-collapse:separate;border-spacing:0;font-size:10px;width:100%}
+.yr th,.yr td{height:24px;min-width:15px;text-align:center;padding:0;border-right:1px solid #eef1f6;border-bottom:1px solid #eef1f6}
+.yr thead th{position:sticky;top:0;z-index:3;background:#fff;font-weight:600;color:var(--mut,#64748b)}
+.yr thead tr.w th{top:24px;font-size:9px;font-weight:500}
+.yr th.r{position:sticky;left:0;z-index:4;background:#fff;text-align:left;min-width:165px;max-width:165px;padding:0 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yr thead th.r{z-index:5}
+.yr tr.gh th{background:#f3f6fb;font-size:11px;color:#0b2a5b}.yr tr.gh td{background:#f3f6fb}
+.yr tr.mine th.r{box-shadow:inset 3px 0 0 var(--cyan,#019DF4)}
+.yr td.cur,.yr th.cur{box-shadow:inset 0 0 0 1px #0b2a5b}
+.yr td.on{color:#fff;font-weight:700}
+.yr td.tt,.yr th.tt{min-width:36px;font-weight:700;background:#fafbfd}
+.yr th.mo{border-left:2px solid #cfd8e6;text-align:left;padding-left:6px}
+.yr td.ms{border-left:2px solid #cfd8e6}
 .gw{overflow:auto;max-height:72vh;border:1px solid var(--bd);border-radius:8px;background:#fff}
 table.cal{border-collapse:separate;border-spacing:0}
 table.cal th,table.cal td{border-right:1px solid #ECEFF3;border-bottom:1px solid #ECEFF3;text-align:center;font-size:11px}
@@ -193,7 +206,7 @@ const CFG={ SUPA_URL:"https://ebgihqxkpkfkskzcqpkw.supabase.co", SUPA_KEY:"sb_pu
 const SUPA=!!(CFG.SUPA_URL&&CFG.SUPA_KEY);
 const LOG_OWNER="KRUKI";
 const MAX_BYTES=SUPA?3000000:95000;             // JSONBin gratis admite hasta 100 kb por bin            // único usuario que ve el Registro y el resumen de actividad
-const SEED={"v":1,"groups":["Supervisión","Migracion","Triagem","2daLinea","0800 TECO","Chat Provision"],"people":{"KRUKI":{"id":"KRUKI","ap":"Kruk Losada","no":"Iván Javier","g":"Supervisión","jd":"","em":"ivan.kruk@tmoviles.com.ar","ent":"","role":"admin","salt":"e0b0db8135448aed","ph":"59db4e5e804891e8e520ba3425aa5a1187dce4e46dc5d3ac6dd6a15caa7d746d","must":false,"on":true,"last":null},"BERRAONDON":{"id":"BERRAONDON","ap":"Berraondo","no":"Nestor Fabian","g":"Migracion","jd":"07:00","em":"nestor.berraondo@tmoviles.com.ar","ent":"","role":"user","salt":"f11dafd919e3d0a3","ph":"5a702b2581f049b1b672ee0f4b39c615d78188e8fa71f4936e7df5395897983c","must":true,"on":true,"last":null},"GRAMAJOD":{"id":"GRAMAJOD","ap":"Gramajo","no":"Domingo","g":"Migracion","jd":"07:00","em":"domingo.gramajo@tmoviles.com.ar","ent":"","role":"user","salt":"6b198a3d3dd0e036","ph":"6b067faf63220c6066760aeae243f0ce2b78f12f689a34fb4b99e360099f80ce","must":true,"on":true,"last":null},"TETTAMANTIA":{"id":"TETTAMANTIA","ap":"Tettamanti","no":"Alberto Oscar","g":"Triagem","jd":"06:30","em":"alberto.tettamanti@tmoviles.com.ar","ent":"","role":"user","salt":"c9a72f506f44ed7a","ph":"7f85af9792c8bf73a18aad864dc1187bbb46b84d2e95a5e57ee39d23cd4a51ff","must":true,"on":true,"last":null},"LOJOM":{"id":"LOJOM","ap":"Lojo","no":"Marcelo","g":"Migracion","jd":"07:00","em":"marcelo.lojo@tmoviles.com.ar","ent":"","role":"user","salt":"bc0167d0ca00a4f3","ph":"e676f7a4dc6b0663cf55fb41d6f5b62bb66198db07acb720178f31e29d7a463d","must":true,"on":true,"last":null},"GADEACA":{"id":"GADEACA","ap":"Gadea","no":"Carlos Miguel","g":"Migracion","jd":"07:00","em":"carlos.gadeag2@tmoviles.com.ar","ent":"","role":"user","salt":"8b8bbd054a63477c","ph":"5047d663ed46e0e787a47edd7659f84db07df89b4854693f9aa57e2b9f3b3563","must":true,"on":true,"last":null},"SAMANIEGOC":{"id":"SAMANIEGOC","ap":"Samaniego","no":"Claudio Gabriel","g":"Migracion","jd":"07:00","em":"claudio.samaniego@tmoviles.com.ar","ent":"","role":"user","salt":"4b75cb675307b6a5","ph":"0df8e8c17b7d49342ac40554d37a0f02aadb041293790e1fac3e6089c45f7c28","must":true,"on":true,"last":null},"PERCIVATIE":{"id":"PERCIVATIE","ap":"Percivati","no":"Franco Esteban Carlos","g":"Triagem","jd":"06:30","em":"esteban.percivati@tmoviles.com.ar","ent":"","role":"user","salt":"caaeb5920864f0a2","ph":"1e71a053206d41430abea3588ce21294f5c48847dc3369e3d477943e5ad0a171","must":true,"on":true,"last":null},"GALVANS":{"id":"GALVANS","ap":"Galvan","no":"Sergio Gustavo","g":"Migracion","jd":"07:00","em":"segio.galvan@tmoviles.com.ar","ent":"","role":"user","salt":"230808f2e3b8070c","ph":"b674a41276cb8153371e9bc6346f3ce21c3fef73c628d189962d008b039e38f1","must":true,"on":true,"last":null},"GIMENEZGA":{"id":"GIMENEZGA","ap":"Gimenez","no":"Gabriel Leonardo","g":"2daLinea","jd":"06:30","em":"gabriel.gimenez@tmoviles.com.ar","ent":"","role":"user","salt":"996cc3e8638c9a5a","ph":"09cecc8e0d44868dc0f7b3645dfb40f7e48d371beeec4ab447d7f5ff999c09d4","must":true,"on":true,"last":null},"LAIZE":{"id":"LAIZE","ap":"Laiz","no":"Emiliano","g":"Migracion","jd":"07:00","em":"emiliano.laiz@tmoviles.com.ar","ent":"","role":"user","salt":"7bfd984c1f0eb36b","ph":"2ff07c0165763d131db42f1d59fc97a7f5f869f9d64fb69dd29796cc378700ab","must":true,"on":true,"last":null},"DELGADOSIL":{"id":"DELGADOSIL","ap":"Delgado","no":"Silvana Edith","g":"2daLinea","jd":"06:30","em":"silvana.delgado@tmoviles.com.ar","ent":"","role":"user","salt":"fc6a4599d902d03a","ph":"69ceb9636c5392b1f10e5d3eaac7513513cc8206a02b480b1a2a16d1e3b980cd","must":true,"on":true,"last":null},"ZAMORANOD":{"id":"ZAMORANOD","ap":"Zamorano","no":"Daniela","g":"Triagem","jd":"06:30","em":"daniela.zamorano@tmoviles.com.ar","ent":"","role":"user","salt":"07530ca1bd344cee","ph":"21f43786575c36bd75b90ce422fe88d1147d0878040ac403f515399358f63608","must":true,"on":true,"last":null},"TORELLAL":{"id":"TORELLAL","ap":"Torella","no":"Laura Beatriz","g":"2daLinea","jd":"06:30","em":"laura.torella@tmoviles.com.ar","ent":"","role":"user","salt":"c702bd886879b0b9","ph":"71de5b6f2b730042f94611a96f4d5cffeccd35e624d7cdd99ab48dd87558f3e3","must":true,"on":true,"last":null},"CARRIZOF":{"id":"CARRIZOF","ap":"Carrizo","no":"Franco","g":"2daLinea","jd":"06:30","em":"franco.carrizo@tmoviles.com.ar","ent":"","role":"user","salt":"b779aca287b27a7d","ph":"165ee1b96842a3fd13c85ffc0d64c221873b5068031dac5a3bcd5e0065107066","must":true,"on":true,"last":null},"BALDERRAMAE":{"id":"BALDERRAMAE","ap":"Balderrama","no":"Elias Miguel","g":"0800 TECO","jd":"06:30","em":"eliasm.balderrama@tmoviles.com.ar","ent":"","role":"user","salt":"a5347ae488b1c11f","ph":"0d8d9aabc32c6a888b0cd52baf0a2758d1ce427119aa8a8e907b9c4d000acb8f","must":true,"on":true,"last":null},"SOSTOP":{"id":"SOSTOP","ap":"Sosto","no":"Patricia","g":"Chat Provision","jd":"06:30","em":"patricia.sosto@tmoviles.com.ar","ent":"","role":"user","salt":"806ca336a2a8f7e6","ph":"2a6ee39ac15d4b1c3274cd440ba0fcea716a50d255cd5a4ff663ac3156dac637","must":true,"on":true,"last":null},"NAVARROAN":{"id":"NAVARROAN","ap":"Navarro","no":"Antonio Luis","g":"0800 TECO","jd":"06:30","em":"antonio.navarrro@tmoviles.com.ar","ent":"","role":"user","salt":"30a264b6c2704e25","ph":"e64fd18469fdc66f1f50f12606d50bf7a8e44d8df86b8910a48fb28b3342a64a","must":true,"on":true,"last":null},"SANSEBASTIANO":{"id":"SANSEBASTIANO","ap":"San Sebastian","no":"Oscar Abel","g":"Chat Provision","jd":"06:30","em":"oscar.san@tmoviles.com.ar","ent":"","role":"user","salt":"41b0abbc59110226","ph":"ec56f5f5205a4214419a39deff7274467cd2947b4852d6616e4bf09ff71c7baa","must":true,"on":true,"last":null}},"ev":{},"log":[],"hol":{"2026-03-23":{"n":"Día no laborable con fines turísticos","t":"nl"},"2026-07-10":{"n":"Día no laborable con fines turísticos","t":"nl"},"2026-12-07":{"n":"Día no laborable con fines turísticos","t":"nl"}}};
+const SEED={"v":1,"groups":["Supervisión","Migracion","Triagem","2daLinea","0800 TECO","Chat Provision"],"people":{"KRUKI":{"id":"KRUKI","ap":"Kruk Losada","no":"Iván Javier","g":"Supervisión","jd":"","em":"ivan.kruk@tmoviles.com.ar","ent":"","role":"admin","salt":"470664840022f47c","ph":"4abf30107206a8d35d3359efadc01a21d6e2cd376034916b51d87016d10615c1","must":false,"on":true,"last":null},"BERRAONDON":{"id":"BERRAONDON","ap":"Berraondo","no":"Nestor Fabian","g":"Migracion","jd":"07:00","em":"nestor.berraondo@tmoviles.com.ar","ent":"","role":"user","salt":"34b81eac8cee659e","ph":"309c5dae51d6c1922fad1beba60160f4e4b67924f8501c2fa644b006fedf7ff6","must":true,"on":true,"last":null},"GRAMAJOD":{"id":"GRAMAJOD","ap":"Gramajo","no":"Domingo","g":"Migracion","jd":"07:00","em":"domingo.gramajo@tmoviles.com.ar","ent":"","role":"user","salt":"1cf16ce41678a869","ph":"ceb181ce03a50351fb80131fb9d21acddbe1945d1b4a25cc59107b63cba5d351","must":true,"on":true,"last":null},"TETTAMANTIA":{"id":"TETTAMANTIA","ap":"Tettamanti","no":"Alberto Oscar","g":"Triagem","jd":"06:30","em":"alberto.tettamanti@tmoviles.com.ar","ent":"","role":"user","salt":"e0db8d0c6a616420","ph":"e415518e67e0ce5cf6b7cad9f4f0892f710cb8130853828e338dfd1f925584b4","must":true,"on":true,"last":null},"LOJOM":{"id":"LOJOM","ap":"Lojo","no":"Marcelo","g":"Migracion","jd":"07:00","em":"marcelo.lojo@tmoviles.com.ar","ent":"","role":"user","salt":"fb90a4959ec036e4","ph":"4be6efeeca8175e0e5c81a180d4ec094117ab7e88069157e2af190272c0e2796","must":true,"on":true,"last":null},"GADEACA":{"id":"GADEACA","ap":"Gadea","no":"Carlos Miguel","g":"Migracion","jd":"07:00","em":"carlos.gadeag2@tmoviles.com.ar","ent":"","role":"user","salt":"ca5f735265a53168","ph":"ce60b68cb76ff9bc7096a338d4e280bf3c583ccc914a19f7298156bd5dbe3d28","must":true,"on":true,"last":null},"SAMANIEGOC":{"id":"SAMANIEGOC","ap":"Samaniego","no":"Claudio Gabriel","g":"Migracion","jd":"07:00","em":"claudio.samaniego@tmoviles.com.ar","ent":"","role":"user","salt":"8d59569e78169284","ph":"89d6c9399d56588b2fc6741015abe2557e94eded461584cc07f641f731dc5fa2","must":true,"on":true,"last":null},"PERCIVATIE":{"id":"PERCIVATIE","ap":"Percivati","no":"Franco Esteban Carlos","g":"Triagem","jd":"06:30","em":"esteban.percivati@tmoviles.com.ar","ent":"","role":"user","salt":"2dc0890c17e7798a","ph":"5a61c4f312633fc93c541c39f1855374692f01cca4dfaba7fba65f7acace9a4f","must":true,"on":true,"last":null},"GALVANS":{"id":"GALVANS","ap":"Galvan","no":"Sergio Gustavo","g":"Migracion","jd":"07:00","em":"segio.galvan@tmoviles.com.ar","ent":"","role":"user","salt":"1389d2ad44e8d7cb","ph":"fb77a3c2010400de8b1d8b0313778bcc554b62e897210ef55c7d4b68c959ce14","must":true,"on":true,"last":null},"GIMENEZGA":{"id":"GIMENEZGA","ap":"Gimenez","no":"Gabriel Leonardo","g":"2daLinea","jd":"06:30","em":"gabriel.gimenez@tmoviles.com.ar","ent":"","role":"user","salt":"aaeee5872d9c842a","ph":"91bce6fac8398a4100ffa220feb8af3171f18e9b84e750320f47066d5ef59a3f","must":true,"on":true,"last":null},"LAIZE":{"id":"LAIZE","ap":"Laiz","no":"Emiliano","g":"Migracion","jd":"07:00","em":"emiliano.laiz@tmoviles.com.ar","ent":"","role":"user","salt":"b54047a509d860ee","ph":"c062b31a0c9a90e30fbf9eb71f22e31c2d7cd8eab715115b143e995d0ea90a0e","must":true,"on":true,"last":null},"DELGADOSIL":{"id":"DELGADOSIL","ap":"Delgado","no":"Silvana Edith","g":"2daLinea","jd":"06:30","em":"silvana.delgado@tmoviles.com.ar","ent":"","role":"user","salt":"07b8a58950912423","ph":"9b5c7ee69d596dcf5fda33414789469f9c5e8bba9a733730dc17d09cea3e23da","must":true,"on":true,"last":null},"ZAMORANOD":{"id":"ZAMORANOD","ap":"Zamorano","no":"Daniela","g":"Triagem","jd":"06:30","em":"daniela.zamorano@tmoviles.com.ar","ent":"","role":"user","salt":"f6adc8aa5900237f","ph":"2b8c0423e06504f9a981fd1574448e9f2cba4516ce4c901d0236a34a545f8e69","must":true,"on":true,"last":null},"TORELLAL":{"id":"TORELLAL","ap":"Torella","no":"Laura Beatriz","g":"2daLinea","jd":"06:30","em":"laura.torella@tmoviles.com.ar","ent":"","role":"user","salt":"a4e5981143c60c44","ph":"f84c8b7a76bd07286c8661ac67767d5f6ffaeb6fc973958f5d4a8918ca9e15c4","must":true,"on":true,"last":null},"CARRIZOF":{"id":"CARRIZOF","ap":"Carrizo","no":"Franco","g":"2daLinea","jd":"06:30","em":"franco.carrizo@tmoviles.com.ar","ent":"","role":"user","salt":"b1e5c514197ea8d0","ph":"a05f2b3e93b8aff9144b661963d28628cc16f44ce995c46e49d2d5fa2c0cdc97","must":true,"on":true,"last":null},"BALDERRAMAE":{"id":"BALDERRAMAE","ap":"Balderrama","no":"Elias Miguel","g":"0800 TECO","jd":"06:30","em":"eliasm.balderrama@tmoviles.com.ar","ent":"","role":"user","salt":"11f0528e26cc7039","ph":"2b4fd882c3ee22c1379457e2ad61893b0936956e5e5ef71b2eea8fd7fe34afa1","must":true,"on":true,"last":null},"SOSTOP":{"id":"SOSTOP","ap":"Sosto","no":"Patricia","g":"Chat Provision","jd":"06:30","em":"patricia.sosto@tmoviles.com.ar","ent":"","role":"user","salt":"bc6bc0e8905e2d7d","ph":"2ab6bd7bbc671a9e205b005760a045ed67584f880d40339a195f7975f114526a","must":true,"on":true,"last":null},"NAVARROAN":{"id":"NAVARROAN","ap":"Navarro","no":"Antonio Luis","g":"0800 TECO","jd":"06:30","em":"antonio.navarrro@tmoviles.com.ar","ent":"","role":"user","salt":"eee148f288890031","ph":"e8bd9640f64b5caf4c6275e6c63b46e4b7c355cc07ec610ffca3ff9dfde1cfbf","must":true,"on":true,"last":null},"SANSEBASTIANO":{"id":"SANSEBASTIANO","ap":"San Sebastian","no":"Oscar Abel","g":"Chat Provision","jd":"06:30","em":"oscar.san@tmoviles.com.ar","ent":"","role":"user","salt":"1789dd99eca86fea","ph":"da6e3dd71a9c583a45095cad026dd19f81207b97d62a97dc8b20962744bf79ab","must":true,"on":true,"last":null}},"ev":{},"log":[],"hol":{"2026-03-23":{"n":"Día no laborable con fines turísticos","t":"nl"},"2026-07-10":{"n":"Día no laborable con fines turísticos","t":"nl"},"2026-12-07":{"n":"Día no laborable con fines turísticos","t":"nl"}}};
 
 /* ---------- utilidades ---------- */
 const $=s=>document.querySelector(s);
@@ -291,7 +304,7 @@ function normalize(db){
 
 /* ---------- estado ---------- */
 let DB=null,SID=null,VIEW='res',GF='ALL',MODE='V',SCR=1,PT='p',HY=null,LF={u:'',q:'',nologin:true};
-const NOW=new Date();let YM={y:NOW.getFullYear(),m:NOW.getMonth()};
+const NOW=new Date();let YM={y:NOW.getFullYear(),m:NOW.getMonth()};let RY=NOW.getFullYear(),RT='V';
 const newD=()=>({ev:new Set(),pe:new Set(),gr:false,hol:false});
 let D=newD(),PEND=[],saveT=null,flushing=false,SYNC='ok',lastLoad=Date.now(),forced=false;
 const me=()=>DB&&DB.people[SID];
@@ -573,15 +586,19 @@ function delValue(b){
   setDay(p,d,o=>{if(t==='H')delete o.h;else delete o.s;});rec('del',t,p,d);forced=false;closeModal();render();
 }
 function openRange(){
-  const ps=isAdmin()?visible():[me()],td=todayS();
+  const ps=isAdmin()?visible():[me()],td=(YM.y===NOW.getFullYear()&&YM.m===NOW.getMonth())?todayS():iso(YM.y,YM.m,1);
   openModal(`<h3>Cargar varios días</h3>
    <div class="fg"><label>Persona</label><select id="rp" ${isAdmin()?'':'disabled'}>${ps.map(p=>`<option value="${E(p.id)}" ${p.id===SID?'selected':''}>${E(nm(p))}</option>`).join('')}</select></div>
    <div class="fg"><label>Qué cargar</label><select id="rt" onchange="rangeUi()"><option value="V">Vacaciones</option><option value="G">Guardia</option><option value="H">Horas extras</option><option value="F">Franco</option><option value="S">Horario especial</option><option value="X">Borrar días</option></select></div>
-   <div class="row"><div class="fg" style="flex:1"><label>Desde</label><input id="rf" type="date" value="${td}"></div><div class="fg" style="flex:1"><label>Hasta</label><input id="rh" type="date" value="${td}"></div></div>
+   <div class="row"><div class="fg" style="flex:1"><label>Desde</label><input id="rf" type="date" value="${td}" onchange="rfChg()"></div><div class="fg" style="flex:1"><label>Hasta</label><input id="rh" type="date" value="${td}" min="${td}" onchange="this.dataset.t=1"></div></div>
    <div class="fg hide" id="rvw"><label id="rvl">Valor</label><input id="rv"></div>
    <label class="row" style="margin-bottom:6px"><input type="checkbox" id="rs"> Omitir sábados y domingos</label>
    <div class="macts"><button onclick="closeModal()">Cancelar</button><button class="pri" onclick="applyRange()">Aplicar</button></div>`);
   rangeUi();
+}
+function rfChg(){
+  const f=$('#rf').value,h=$('#rh');if(!f)return;
+  h.min=f;if(!h.dataset.t||!h.value||h.value<f)h.value=f;
 }
 function rangeUi(){
   const t=$('#rt').value,w=$('#rvw'),i=$('#rv');
@@ -732,6 +749,48 @@ function renderNow(){
 const typeChip=(t,x)=>`<span class="chip c${t}">${x}</span>`;
 
 /* ---------- VISTA: Resumen ---------- */
+function weeksOf(y){
+  const w=[],st=new Date(y,0,1);st.setDate(st.getDate()-((st.getDay()+6)%7));
+  for(let x=new Date(st);x<=new Date(y,11,31);x.setDate(x.getDate()+7)){
+    const days=[];for(let i=0;i<7;i++){const d=new Date(x.getFullYear(),x.getMonth(),x.getDate()+i);if(d.getFullYear()===y)days.push(iso(y,d.getMonth(),d.getDate()));}
+    const th=new Date(x.getFullYear(),x.getMonth(),x.getDate()+3);
+    const mo=th.getFullYear()<y?0:th.getFullYear()>y?11:th.getMonth();
+    const j=new Date(th.getFullYear(),0,1),wn=Math.ceil(((th-j)/864e5+1)/7);
+    w.push({days,mo,wn,from:x.getFullYear()+'-'+p2(x.getMonth()+1)+'-'+p2(x.getDate())});
+  }
+  return w;
+}
+function vYear(ps){
+  const y=RY,ws=weeksOf(y),t=todayS(),ty=RT;
+  const col={V:'var(--V)',G:'var(--G)',F:'var(--F)'}[ty];
+  const hit=(pid,d)=>{const e=dayOf(pid,d);return e&&(ty==='G'?e.g:e.a===ty);};
+  const mh=[];ws.forEach((w,i)=>{if(i&&mh[mh.length-1].mo===w.mo)mh[mh.length-1].n++;else mh.push({mo:w.mo,n:1});});
+  const head=`<thead><tr><th class="r" rowspan="2">Persona</th>${mh.map(m=>`<th class="mo" colspan="${m.n}">${MESES[m.mo].slice(0,3)}</th>`).join('')}<th class="tt" rowspan="2">Total</th></tr><tr class="w">${ws.map((w,i)=>`<th class="${w.days.includes(t)?'cur':''} ${i&&ws[i-1].mo!==w.mo?'ms':''}" title="Semana del ${fmtD(w.days[0])}">${w.wn}</th>`).join('')}</tr></thead>`;
+  let body='';
+  DB.groups.forEach(g=>{
+    const gp=ps.filter(p=>p.g===g);if(!gp.length)return;
+    body+=`<tr class="gh"><th class="r">${E(g)} · ${gp.length}</th><td colspan="${ws.length+1}"></td></tr>`;
+    gp.forEach(p=>{
+      let tot=0;
+      const cells=ws.map((w,i)=>{
+        const ds=w.days.filter(d=>hit(p.id,d));tot+=ds.length;
+        const ms=i&&ws[i-1].mo!==w.mo?'ms':'';
+        const cur=w.days.includes(t)?'cur':'';
+        if(!ds.length)return `<td class="${ms} ${cur}"></td>`;
+        const pc=ds.length>=5?100:ds.length>=3?72:45;
+        const tip=`${nm(p)} · ${LAB[ty]}: ${ds.length===1?fmtD(ds[0]):fmtD(ds[0])+' a '+fmtD(ds[ds.length-1])} (${ds.length} día${ds.length>1?'s':''})`;
+        return `<td class="on ${ms} ${cur}" style="background:color-mix(in srgb,${col} ${pc}%,#fff)" title="${E(tip)}">${ds.length}</td>`;
+      }).join('');
+      body+=`<tr class="${p.id===SID?'mine':''}"><th class="r" title="${E(nm(p))}">${E(nm(p))}${p.id===SID?'<em>vos</em>':''}</th>${cells}<td class="tt">${tot||''}</td></tr>`;
+    });
+  });
+  const foot=`<tr class="gh"><th class="r">Personas con ${LAB[ty].toLowerCase()}</th>${ws.map((w,i)=>{const c=ps.filter(p=>w.days.some(d=>hit(p.id,d))).length;return `<td class="${i&&ws[i-1].mo!==w.mo?'ms':''}" style="font-weight:700">${c||''}</td>`;}).join('')}<td></td></tr>`;
+  return `<div class="card"><h3>Panorama del año ${y}</h3>
+   <div class="tb" style="margin-bottom:10px"><button onclick="RY--;render()">‹</button><b style="min-width:44px;text-align:center">${y}</b><button onclick="RY++;render()">›</button>${y!==NOW.getFullYear()?'<button onclick="RY=NOW.getFullYear();render()">Este año</button>':''}
+    <select onchange="RT=this.value;render()">${[['V','Vacaciones'],['G','Guardias'],['F','Francos']].map(([k,l])=>`<option value="${k}" ${k===ty?'selected':''}>${l}</option>`).join('')}</select>
+    <span class="mut">Cada columna es una semana (lunes a domingo) y el número es la cantidad de días. Pasá el mouse por una celda para ver las fechas.</span></div>
+   <div class="gw"><table class="yr">${head}<tbody>${body||'<tr><td style="padding:20px">No hay personas en esta vista.</td></tr>'}</tbody><tfoot>${foot}</tfoot></table></div></div>`;
+}
 function vRes(){
   const{y,m}=YM,t=todayS(),ps=visible();
   const st=ps.map(p=>({p,s:stats(p.id,y,m),td:todayInfo(p,t),e:dayOf(p.id,t)||{}}));
@@ -765,7 +824,7 @@ function vRes(){
   up.sort((a,b)=>a.from<b.from?-1:a.from>b.from?1:0);
   const upHtml=up.length?`<table class="t"><tbody>${up.slice(0,40).map(r=>`<tr><td style="width:110px"><b>${r.from===r.to?fmtD(r.from):fmtD(r.from)+' al '+fmtD(r.to)}</b></td><td>${E(nm(r.p))}</td><td>${typeChip(r.ty,LAB[r.ty])}</td></tr>`).join('')}</tbody></table>`:'<p class="mut">No hay vacaciones, guardias ni francos cargados para los próximos 14 días.</p>';
   const grows=DB.groups.filter(g=>st.some(x=>x.p.g===g)).map(g=>{const xs=st.filter(x=>x.p.g===g);const S=k=>xs.reduce((a,x)=>a+x.s[k],0);return `<tr><td><b>${E(g)}</b></td><td class="n">${xs.length}</td><td class="n">${S('V')||'–'}</td><td class="n">${S('G')||'–'}</td><td class="n">${S('H')?fh(S('H')):'–'}</td><td class="n">${S('F')||'–'}</td></tr>`;}).join('');
-  return kp+`<div class="card"><h3>Hoy · ${fmtD(t)} ${hoyTag}</h3><div class="tg-grid">${hoy||'<p class="mut">No hay personal en esta vista.</p>'}</div></div>
+  return kp+vYear(ps)+`<div class="card"><h3>Hoy · ${fmtD(t)} ${hoyTag}</h3><div class="tg-grid">${hoy||'<p class="mut">No hay personal en esta vista.</p>'}</div></div>
    <div class="grid2"><div class="card"><h3>Próximos 14 días</h3>${upHtml}</div><div class="card"><h3>Horas extras de ${MESES[m].toLowerCase()}</h3>${heHtml}</div></div>
    <div class="card"><h3>Totales de ${MESES[m].toLowerCase()} ${y} por grupo</h3><table class="t"><thead><tr><th>Grupo</th><th class="n">Personas</th><th class="n">Vacaciones (días)</th><th class="n">Guardias</th><th class="n">Horas extras</th><th class="n">Francos</th></tr></thead><tbody>${grows}</tbody></table></div>`;
 }
