@@ -98,19 +98,23 @@ table.t tr.off td{opacity:.5}
 /* calendario */
 .tb{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .legend{display:flex;gap:6px;flex-wrap:wrap}
-.yr{border-collapse:separate;border-spacing:0;font-size:10px;width:100%}
-.yr th,.yr td{height:24px;min-width:15px;text-align:center;padding:0;border-right:1px solid #eef1f6;border-bottom:1px solid #eef1f6}
+
+/* Panorama Anual Zoomable */
+.yr-container{overflow:auto;max-height:72vh;border:1px solid var(--bd);border-radius:8px;background:#fff;position:relative;user-select:none}
+.yr{border-collapse:separate;border-spacing:0;font-size:calc(10px * var(--yr-zoom, 1));width:100%}
+.yr th,.yr td{height:calc(24px * var(--yr-zoom, 1));min-width:calc(15px * var(--yr-zoom, 1));text-align:center;padding:0;border-right:1px solid #eef1f6;border-bottom:1px solid #eef1f6}
 .yr thead th{position:sticky;top:0;z-index:3;background:#fff;font-weight:600;color:var(--mut,#64748b)}
-.yr thead tr.w th{top:24px;font-size:9px;font-weight:500}
-.yr th.r{position:sticky;left:0;z-index:4;background:#fff;text-align:left;min-width:165px;max-width:165px;padding:0 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yr thead tr.w th{top:calc(24px * var(--yr-zoom, 1));font-size:calc(9px * var(--yr-zoom, 1));font-weight:500}
+.yr th.r{position:sticky;left:0;z-index:4;background:#fff;text-align:left;min-width:calc(165px * var(--yr-zoom, 1));max-width:calc(165px * var(--yr-zoom, 1));padding:0 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .yr thead th.r{z-index:5}
-.yr tr.gh th{background:#f3f6fb;font-size:11px;color:#0b2a5b}.yr tr.gh td{background:#f3f6fb}
+.yr tr.gh th{background:#f3f6fb;font-size:calc(11px * var(--yr-zoom, 1));color:#0b2a5b}.yr tr.gh td{background:#f3f6fb}
 .yr tr.mine th.r{box-shadow:inset 3px 0 0 var(--cyan,#019DF4)}
 .yr td.cur,.yr th.cur{box-shadow:inset 0 0 0 1px #0b2a5b}
 .yr td.on{color:#fff;font-weight:700}
-.yr td.tt,.yr th.tt{min-width:36px;font-weight:700;background:#fafbfd}
+.yr td.tt,.yr th.tt{min-width:calc(36px * var(--yr-zoom, 1));font-weight:700;background:#fafbfd}
 .yr th.mo{border-left:2px solid #cfd8e6;text-align:left;padding-left:6px}
 .yr td.ms{border-left:2px solid #cfd8e6}
+
 .gw{overflow:auto;max-height:72vh;border:1px solid var(--bd);border-radius:8px;background:#fff}
 table.cal{border-collapse:separate;border-spacing:0}
 table.cal th,table.cal td{border-right:1px solid #ECEFF3;border-bottom:1px solid #ECEFF3;text-align:center;font-size:11px}
@@ -199,13 +203,12 @@ table.cal tfoot tr:nth-last-child(4) td,table.cal tfoot tr:nth-last-child(4) th{
 <script>
 /* =====================================================================
    CONFIGURACIÓN DE LA BASE ONLINE (Supabase o JSONBin)
-   Dejando todo vacío la app funciona en MODO DEMO (solo en este navegador).
    ===================================================================== */
-const CFG={ SUPA_URL:"https://ebgihqxkpkfkskzcqpkw.supabase.co", SUPA_KEY:"sb_publishable_4nVs6MbJzHxjtpLs1IWm7Q_jfBn0-8-",            // Supabase (recomendado)
-            BIN_ID:"", KEY:"", KEY_HEADER:"X-Master-Key" };   // JSONBin (alternativa)
+const CFG={ SUPA_URL:"https://ebgihqxkpkfkskzcqpkw.supabase.co", SUPA_KEY:"sb_publishable_4nVs6MbJzHxjtpLs1IWm7Q_jfBn0-8-",            
+            BIN_ID:"", KEY:"", KEY_HEADER:"X-Master-Key" };   
 const SUPA=!!(CFG.SUPA_URL&&CFG.SUPA_KEY);
 const LOG_OWNER="KRUKI";
-const MAX_BYTES=SUPA?3000000:95000;             // JSONBin gratis admite hasta 100 kb por bin            // único usuario que ve el Registro y el resumen de actividad
+const MAX_BYTES=SUPA?3000000:95000;             
 const SEED={"v":1,"groups":["Supervisión","Migracion","Triagem","2daLinea","0800 TECO","Chat Provision"],"people":{"KRUKI":{"id":"KRUKI","ap":"Kruk Losada","no":"Iván Javier","g":"Supervisión","jd":"","em":"ivan.kruk@tmoviles.com.ar","ent":"","role":"admin","salt":"fb8d021fb3e70350","ph":"7c901ec4b56687876366b54a5fa9c7bea4a5dfc7ea64fded28c21e6172d2e222","must":false,"on":true,"last":null},"BERRAONDON":{"id":"BERRAONDON","ap":"Berraondo","no":"Nestor Fabian","g":"Migracion","jd":"07:00","em":"nestor.berraondo@tmoviles.com.ar","ent":"","role":"user","salt":"94de74fedc0d0ba0","ph":"42726ca62f422c1d925e85bd355589a0a457de581dc992693bc36412b82262c7","must":true,"on":true,"last":null},"GRAMAJOD":{"id":"GRAMAJOD","ap":"Gramajo","no":"Domingo","g":"Migracion","jd":"07:00","em":"domingo.gramajo@tmoviles.com.ar","ent":"","role":"user","salt":"85f8e6114148f98b","ph":"279d014ee2069c8112cd2bec934a955d5ea31ff126b949f787b5418a198b5959","must":true,"on":true,"last":null},"TETTAMANTIA":{"id":"TETTAMANTIA","ap":"Tettamanti","no":"Alberto Oscar","g":"Triagem","jd":"06:30","em":"alberto.tettamanti@tmoviles.com.ar","ent":"","role":"user","salt":"675e37063f1fc34d","ph":"331cbcc593f22df1477bf08bc6f0cde1ed54c0885bebb143604834c869d1aeb1","must":true,"on":true,"last":null},"LOJOM":{"id":"LOJOM","ap":"Lojo","no":"Marcelo","g":"Migracion","jd":"07:00","em":"marcelo.lojo@tmoviles.com.ar","ent":"","role":"user","salt":"6e5945c1ffe9fae7","ph":"b61caecaf570c1de23d74f691ce26d00c8956a4afc68c85fda77fe0446a37117","must":true,"on":true,"last":null},"GADEACA":{"id":"GADEACA","ap":"Gadea","no":"Carlos Miguel","g":"Migracion","jd":"07:00","em":"carlos.gadeag2@tmoviles.com.ar","ent":"","role":"user","salt":"56f5cc52b7da9916","ph":"69a36574b80b64d7e33f832d7f92d0549c62e73991c686ed1e1a6a4fcef889ef","must":true,"on":true,"last":null},"SAMANIEGOC":{"id":"SAMANIEGOC","ap":"Samaniego","no":"Claudio Gabriel","g":"Migracion","jd":"07:00","em":"claudio.samaniego@tmoviles.com.ar","ent":"","role":"user","salt":"dcf34d47b826aefd","ph":"6ee0e1513fbcd8d33edfedc3b5ec25327db9c50a00d2f82ff18740489e2ea665","must":true,"on":true,"last":null},"PERCIVATIE":{"id":"PERCIVATIE","ap":"Percivati","no":"Franco Esteban Carlos","g":"Triagem","jd":"06:30","em":"esteban.percivati@tmoviles.com.ar","ent":"","role":"user","salt":"248b235b3b12f473","ph":"873f002ac5e3df9828346d9c6304b054d7167ea77a76cc19a5e4b216ab7ebec7","must":true,"on":true,"last":null},"GALVANS":{"id":"GALVANS","ap":"Galvan","no":"Sergio Gustavo","g":"Migracion","jd":"07:00","em":"segio.galvan@tmoviles.com.ar","ent":"","role":"user","salt":"47b426c5b75fe995","ph":"9d1941b75a5cab76f4fe4f3d55ba76f47cc5f13ce4c3362d0ab357a2c1045cfc","must":true,"on":true,"last":null},"GIMENEZGA":{"id":"GIMENEZGA","ap":"Gimenez","no":"Gabriel Leonardo","g":"2daLinea","jd":"06:30","em":"gabriel.gimenez@tmoviles.com.ar","ent":"","role":"user","salt":"816832be604f4cd1","ph":"8ec5bd4377b6bea009ce250e32a08b32657cab34090b6177037ec7354216a5e1","must":true,"on":true,"last":null},"LAIZE":{"id":"LAIZE","ap":"Laiz","no":"Emiliano","g":"Migracion","jd":"07:00","em":"emiliano.laiz@tmoviles.com.ar","ent":"","role":"user","salt":"daf2134db6443a37","ph":"225ab9c090e085ab729738e994cb1d3683893545cde7a4e2866a743573bd4107","must":true,"on":true,"last":null},"DELGADOSIL":{"id":"DELGADOSIL","ap":"Delgado","no":"Silvana Edith","g":"2daLinea","jd":"06:30","em":"silvana.delgado@tmoviles.com.ar","ent":"","role":"user","salt":"106fc156f0c05d8c","ph":"d64c2de8dd450dfeea54a7bc204b2a7e0a6f19c1b39f9f1380e8d6470106766d","must":true,"on":true,"last":null},"ZAMORANOD":{"id":"ZAMORANOD","ap":"Zamorano","no":"Daniela","g":"Triagem","jd":"06:30","em":"daniela.zamorano@tmoviles.com.ar","ent":"","role":"user","salt":"43852a46cb945378","ph":"abbdab5c5b82ef0cfb31702f8568c5549a8081de95667e144b5b882b46f4a278","must":true,"on":true,"last":null},"TORELLAL":{"id":"TORELLAL","ap":"Torella","no":"Laura Beatriz","g":"2daLinea","jd":"06:30","em":"laura.torella@tmoviles.com.ar","ent":"","role":"user","salt":"ae9cc4ce803c2b94","ph":"cd32f0af74fbb85628008c437df14f97befc0975996e0c7c39c60dcb1bbcd03f","must":true,"on":true,"last":null},"CARRIZOF":{"id":"CARRIZOF","ap":"Carrizo","no":"Franco","g":"2daLinea","jd":"06:30","em":"franco.carrizo@tmoviles.com.ar","ent":"","role":"user","salt":"42831f0574f83ea5","ph":"79866b3bbeab80fb2f4ba9e33f146d900c81ba9c0f297740d9c3fea6a75a7530","must":true,"on":true,"last":null},"BALDERRAMAE":{"id":"BALDERRAMAE","ap":"Balderrama","no":"Elias Miguel","g":"0800 TECO","jd":"06:30","em":"eliasm.balderrama@tmoviles.com.ar","ent":"","role":"user","salt":"9fea29b5566369fc","ph":"8f5657c2def2020abb0ca87b94b39a70bf359dc91f12060dfc015f13e0078b94","must":true,"on":true,"last":null},"SOSTOP":{"id":"SOSTOP","ap":"Sosto","no":"Patricia","g":"Chat Provision","jd":"06:30","em":"patricia.sosto@tmoviles.com.ar","ent":"","role":"user","salt":"84bfdce242e024e2","ph":"54a53addc1ef4c0be7fab85c65df05d710ca607894c02dcea03bd261d256a29d","must":true,"on":true,"last":null},"NAVARROAN":{"id":"NAVARROAN","ap":"Navarro","no":"Antonio Luis","g":"0800 TECO","jd":"06:30","em":"antonio.navarrro@tmoviles.com.ar","ent":"","role":"user","salt":"231a07b9ec218f42","ph":"e9d63913f39ea7482e77a3672459b32cdbff1938adda1100207c99f237c598d1","must":true,"on":true,"last":null},"SANSEBASTIANO":{"id":"SANSEBASTIANO","ap":"San Sebastian","no":"Oscar Abel","g":"Chat Provision","jd":"06:30","em":"oscar.san@tmoviles.com.ar","ent":"","role":"user","salt":"1a3441291c9f81ae","ph":"8030281cde7cf52d78af24bc6c6d22663c5e156e4dcb4056558c19481087f9ba","must":true,"on":true,"last":null}},"ev":{},"log":[],"hol":{"2026-03-23":{"n":"Día no laborable con fines turísticos","t":"nl"},"2026-07-10":{"n":"Día no laborable con fines turísticos","t":"nl"},"2026-12-07":{"n":"Día no laborable con fines turísticos","t":"nl"}}};
 
 /* ---------- utilidades ---------- */
@@ -226,7 +229,7 @@ const addT=(s,d)=>{const a=mins(s),b=mins(d);return a==null||b==null?'':hm(a+b);
 const jdTxt=d=>{const m=mins(d);if(m==null)return '—';return Math.floor(m/60)+' h'+(m%60?' '+m%60+' min':'');};
 const LAB={V:'Vacaciones',F:'Franco',G:'Guardia',H:'Horas extras',S:'Horario especial','*':'Día'};
 
-/* ---------- SHA-256 (JS puro, funciona también en http/file) ---------- */
+/* ---------- SHA-256 ---------- */
 const K256=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
 function sha256(str){
   const m=unescape(encodeURIComponent(str)),l=m.length,nb=((l+8)>>6)+1,w=new Array(nb*16).fill(0);
@@ -261,7 +264,7 @@ const ssGet=k=>{try{return sessionStorage.getItem(k);}catch(e){return mem[k]||nu
 const ssSet=(k,v)=>{try{sessionStorage.setItem(k,v);}catch(e){mem[k]=v;}};
 const ssDel=k=>{try{sessionStorage.removeItem(k);}catch(e){delete mem[k];}};
 
-/* ---------- capa de base de datos (intercambiable) ---------- */
+/* ---------- capa de base de datos ---------- */
 const REMOTE=SUPA||!!(CFG.BIN_ID&&CFG.KEY);
 const SUPA_EP=(CFG.SUPA_URL||'').replace(/\/+$/,'')+'/rest/v1/store?id=eq.1';
 const SUPA_H={apikey:CFG.SUPA_KEY,'Content-Type':'application/json'};
@@ -303,7 +306,7 @@ function normalize(db){
 }
 
 /* ---------- estado ---------- */
-let DB=null,SID=null,VIEW='res',GF='ALL',MODE='V',SCR=1,PT='p',HY=null,LF={u:'',q:'',nologin:true};
+let DB=null,SID=null,VIEW='res',GF='ALL',MODE='V',SCR=1,PT='p',HY=null,LF={u:'',q:'',nologin:true},YR_ZOOM=1;
 const NOW=new Date();let YM={y:NOW.getFullYear(),m:NOW.getMonth()};let RY=NOW.getFullYear(),RT='V';
 const newD=()=>({ev:new Set(),pe:new Set(),gr:false,hol:false,lc:''});
 let D=newD(),PEND=[],saveT=null,flushing=false,SYNC='ok',lastLoad=Date.now(),forced=false;
@@ -313,7 +316,7 @@ const isOwner=()=>SID===LOG_OWNER;
 const canEdit=pid=>!!me()&&(isAdmin()||SID===pid);
 const dirty=()=>D.ev.size>0||D.pe.size>0||D.gr||D.hol||!!D.lc||PEND.length>0;
 
-/* ---------- feriados de Argentina: se calculan para cualquier año ---------- */
+/* ---------- feriados ---------- */
 const HC={};
 function easterDate(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da);}
 const dsOf=t=>iso(t.getFullYear(),t.getMonth(),t.getDate());
@@ -322,7 +325,6 @@ function baseHol(y){
   if(HC[y])return HC[y];
   const h={},put=(k,n,t)=>{if(!h[k]||(h[k].t==='nl'&&t==='f'))h[k]={n,t};};
   const fix=(m,d,n)=>put(iso(y,m-1,d),n,'f');
-  /* trasladables (Ley 27.399): martes/miércoles -> lunes anterior; jueves/viernes -> lunes siguiente */
   const mov=(m,d,n)=>{const t=new Date(y,m-1,d),w=t.getDay();put(dsOf(w===2||w===3?plusD(t,-(w-1)):w===4||w===5?plusD(t,8-w):t),n,'f');};
   const P=easterDate(y);
   fix(1,1,'Año Nuevo');
@@ -340,7 +342,6 @@ function baseHol(y){
   fix(12,8,'Inmaculada Concepción de María');fix(12,25,'Navidad');
   return HC[y]=h;
 }
-/* feriado efectivo de una fecha: calculado + ajustes del administrador (puentes, cambios por decreto) */
 function holOf(s){const o=(DB&&DB.hol||{})[s];if(o)return o.del?null:o;return baseHol(+s.slice(0,4))[s]||null;}
 function holYear(y){
   const out={},b=baseHol(y);Object.keys(b).forEach(k=>{out[k]={...b[k],src:'calc'};});
@@ -370,7 +371,8 @@ function todayInfo(p,d){
 }
 
 /* ---------- registro de acciones (log) ---------- */
-function queueSave(){clearTimeout(saveT);SYNC='dirty';renderSync();saveT=setTimeout(flush,4000);}
+/* AUTOGUARDADO INSTANTÁNEO: Reducido de 4000ms a 500ms para guardado automático */
+function queueSave(){clearTimeout(saveT);SYNC='dirty';renderSync();saveT=setTimeout(flush,500);}
 function rec(k,t,pid,d,x){PEND.push({ts:new Date().toISOString(),u:SID,k,t,p:pid,d,x});queueSave();}
 function logTxt(a){PEND.push({ts:new Date().toISOString(),u:SID,k:'txt',a});queueSave();}
 function rangeText(ds){
@@ -400,7 +402,7 @@ function collapse(pend){
   return out.sort((x,y)=>x.ts<y.ts?-1:1);
 }
 
-/* ---------- guardado con fusión (no pisa lo que cargaron otros) ---------- */
+/* ---------- guardado con fusión ---------- */
 const SELF_FIELDS=['em','ent','salt','ph','must','last'];
 async function flush(){
   if(flushing||!DB||!SID)return;
@@ -433,8 +435,8 @@ async function flush(){
     lastLoad=Date.now();SYNC=dirty()?'dirty':'ok';
   }catch(err){
     D.ev=new Set([...d.ev,...D.ev]);D.pe=new Set([...d.pe,...D.pe]);D.gr=d.gr||D.gr;D.hol=d.hol||D.hol;D.lc=(d.lc&&d.lc>D.lc)?d.lc:D.lc;PEND=pend.concat(PEND);
-    SYNC='err';window.lastErr=String(err);toast('No se pudo guardar ('+err.message+'). Reintento en 15 s.');
-    clearTimeout(saveT);saveT=setTimeout(flush,15000);
+    SYNC='err';window.lastErr=String(err);toast('No se pudo guardar ('+err.message+'). Reintento en 5 s.');
+    clearTimeout(saveT);saveT=setTimeout(flush,5000);
   }
   flushing=false;
   if(!me()&&SID){toast('Tu usuario ya no existe.');return logout(true);}
@@ -530,7 +532,6 @@ function changePw(){
   ['pw0','pw1','pw2'].forEach(i=>$('#'+i).value='');toast('Contraseña actualizada');flush();
 }
 
-/* resumen de actividad para el dueño */
 function showSummary(last){
   if(!last){toast('Primer ingreso registrado. Desde ahora vas a ver un resumen de lo que pase mientras no estés.');return;}
   const L=(DB.log||[]).filter(x=>x.ts>last&&x.u!==SID);
@@ -580,11 +581,11 @@ function saveValue(b){
   const{p,d,t}=b.dataset,v=$('#vv').value;
   if(t==='H'){const h=parseFloat(v);if(!(h>0&&h<=24)){toast('Ingresá una cantidad de horas válida');return;}setDay(p,d,o=>{o.h=h;});rec('set','H',p,d,h);}
   else{if(mins(v)==null){toast('Ingresá una hora válida');return;}setDay(p,d,o=>{o.s=v;});rec('set','S',p,d,v);}
-  forced=false;closeModal();render();
+  forced=false;closeModal();render();flush();
 }
 function delValue(b){
   const{p,d,t}=b.dataset;
-  setDay(p,d,o=>{if(t==='H')delete o.h;else delete o.s;});rec('del',t,p,d);forced=false;closeModal();render();
+  setDay(p,d,o=>{if(t==='H')delete o.h;else delete o.s;});rec('del',t,p,d);forced=false;closeModal();render();flush();
 }
 function openRange(){
   const ps=isAdmin()?visible():[me()],td=(YM.y===NOW.getFullYear()&&YM.m===NOW.getMonth())?todayS():iso(YM.y,YM.m,1);
@@ -625,12 +626,12 @@ function applyRange(){
     else if(t==='S'){setDay(pid,d,o=>{o.s=v;});rec('set','S',pid,d,v);}
     else if(t==='X'){if(dayOf(pid,d)){setDay(pid,d,o=>{delete o.a;delete o.g;delete o.h;delete o.s;});rec('del','*',pid,d);}}
   }
-  closeModal();render();toast(n+' '+(n===1?'día procesado':'días procesados'));
+  closeModal();render();flush();toast(n+' '+(n===1?'día procesado':'días procesados'));
 }
 
 /* ---------- edición de perfil / personal ---------- */
-function setEm(pid,v){const p=DB.people[pid];if(!p||!canEdit(pid))return;v=v.trim();if(v===(p.em||''))return;p.em=v;D.pe.add(pid);logTxt('Actualizó el correo'+(pid===SID?'':' de '+nm(p)));toast('Guardado');}
-function setEnt(pid,v){const p=DB.people[pid];if(!p||!canEdit(pid))return;if((v||'')===(p.ent||''))return;p.ent=v;D.pe.add(pid);logTxt(`Actualizó el horario de entrada${pid===SID?'':' de '+nm(p)}: ${v||'sin definir'}`);render();}
+function setEm(pid,v){const p=DB.people[pid];if(!p||!canEdit(pid))return;v=v.trim();if(v===(p.em||''))return;p.em=v;D.pe.add(pid);logTxt('Actualizó el correo'+(pid===SID?'':' de '+nm(p)));toast('Guardado');flush();}
+function setEnt(pid,v){const p=DB.people[pid];if(!p||!canEdit(pid))return;if((v||'')===(p.ent||''))return;p.ent=v;D.pe.add(pid);logTxt(`Actualizó el horario de entrada${pid===SID?'':' de '+nm(p)}: ${v||'sin definir'}`);render();flush();}
 const jdNum=d=>{const m=mins(d);return m==null?'':+(m/60).toFixed(2);};
 function jdCell(p){
   if(!isAdmin())return jdTxt(p.jd);
@@ -650,6 +651,7 @@ function pedit(pid,f,v){
   const L={ap:'apellido',no:'nombre',g:'grupo',jd:'jornada',role:'rol',on:'estado'};
   logTxt(f==='on'?`${v?'Reactivó':'Dio de baja'} a ${nm(p)}`:`Modificó ${L[f]} de ${nm(p)}: ${old||'—'} → ${v||'—'}`);
   if(f!=='ap'&&f!=='no')render();
+  flush();
 }
 function resetPw(pid){
   if(!isAdmin())return;const p=DB.people[pid];if(!p)return;
@@ -673,30 +675,30 @@ function addHol(){
   if(!isAdmin())return;const d=$('#hd').value,n=$('#hn').value.trim(),t=$('#ht').value;
   if(!d||!n)return toast('Completá la fecha y el nombre');
   DB.hol=DB.hol||{};DB.hol[d]={n,t};D.hol=true;
-  logTxt(`Cargó ${t==='nl'?'día no laborable':'feriado'} "${n}" (${fmtD(d)}/${d.slice(0,4)})`);HY=+d.slice(0,4);render();
+  logTxt(`Cargó ${t==='nl'?'día no laborable':'feriado'} "${n}" (${fmtD(d)}/${d.slice(0,4)})`);HY=+d.slice(0,4);render();flush();
 }
 function delHol(d){
   if(!isAdmin())return;const cur=holOf(d),b=baseHol(+d.slice(0,4))[d];
   DB.hol=DB.hol||{};if(b)DB.hol[d]={del:1};else delete DB.hol[d];D.hol=true;
-  logTxt(`Quitó ${cur&&cur.t==='nl'?'día no laborable':'feriado'} "${cur?cur.n:''}" (${fmtD(d)}/${d.slice(0,4)})`);render();
+  logTxt(`Quitó ${cur&&cur.t==='nl'?'día no laborable':'feriado'} "${cur?cur.n:''}" (${fmtD(d)}/${d.slice(0,4)})`);render();flush();
 }
-function restHol(d){if(!isAdmin())return;delete DB.hol[d];D.hol=true;logTxt(`Restauró el feriado del ${fmtD(d)}/${d.slice(0,4)}`);render();}
+function restHol(d){if(!isAdmin())return;delete DB.hol[d];D.hol=true;logTxt(`Restauró el feriado del ${fmtD(d)}/${d.slice(0,4)}`);render();flush();}
 function addGroup(){
   if(!isAdmin())return;const v=$('#ngn').value.trim();
   if(!v)return;if(DB.groups.includes(v))return toast('Ya existe ese grupo');
-  DB.groups.push(v);D.gr=true;logTxt(`Creó el grupo "${v}"`);render();
+  DB.groups.push(v);D.gr=true;logTxt(`Creó el grupo "${v}"`);render();flush();
 }
 function renGroup(i,v){
   if(!isAdmin())return;v=v.trim();const old=DB.groups[i];
   if(!v||v===old)return render();if(DB.groups.includes(v)){toast('Ya existe ese grupo');return render();}
   DB.groups[i]=v;D.gr=true;Object.values(DB.people).forEach(p=>{if(p.g===old){p.g=v;D.pe.add(p.id);}});
-  logTxt(`Renombró el grupo "${old}" a "${v}"`);render();
+  logTxt(`Renombró el grupo "${old}" a "${v}"`);render();flush();
 }
 function delGroup(i){
   if(!isAdmin())return;const g=DB.groups[i];
   if(Object.values(DB.people).some(p=>p.g===g))return toast('Hay personas en ese grupo: movelas antes de eliminarlo');
   if(!confirm('¿Eliminar el grupo "'+g+'"?'))return;
-  DB.groups.splice(i,1);D.gr=true;logTxt(`Eliminó el grupo "${g}"`);render();
+  DB.groups.splice(i,1);D.gr=true;logTxt(`Eliminó el grupo "${g}"`);render();flush();
 }
 
 /* ---------- navegación y render ---------- */
@@ -715,7 +717,7 @@ function renderSb(){
 }
 function renderSync(){
   const e=$('#sync');if(!e)return;
-  const T={ok:'Guardado',dirty:'Cambios sin guardar…',busy:'Guardando…',err:'Sin conexión · reintentando'};
+  const T={ok:'Guardado',dirty:'Guardando automáticamente…',busy:'Guardando…',err:'Sin conexión · reintentando'};
   e.className='sync '+(SYNC==='ok'?'':SYNC);e.textContent=T[SYNC];
 }
 function renderTop(){
@@ -761,6 +763,23 @@ function weeksOf(y){
   }
   return w;
 }
+
+/* ZOOM PANORAMA DEL AÑO */
+function zoomYr(dz){
+  YR_ZOOM = Math.min(2.5, Math.max(0.6, YR_ZOOM + dz));
+  const el = $('#yrContainer');
+  if(el) el.style.setProperty('--yr-zoom', YR_ZOOM);
+}
+function resetYrZoom(){
+  YR_ZOOM = 1;
+  const el = $('#yrContainer');
+  if(el) el.style.setProperty('--yr-zoom', YR_ZOOM);
+}
+function yrWheel(e){
+  e.preventDefault();
+  zoomYr(e.deltaY < 0 ? 0.1 : -0.1);
+}
+
 function vYear(ps){
   const y=RY,ws=weeksOf(y),t=todayS(),ty=RT;
   const col={V:'var(--V)',G:'var(--G)',F:'var(--F)'}[ty];
@@ -787,11 +806,23 @@ function vYear(ps){
   });
   const foot=`<tr class="gh"><th class="r">Personas con ${LAB[ty].toLowerCase()}</th>${ws.map((w,i)=>{const c=ps.filter(p=>w.days.some(d=>hit(p.id,d))).length;return `<td class="${i&&ws[i-1].mo!==w.mo?'ms':''}" style="font-weight:700">${c||''}</td>`;}).join('')}<td></td></tr>`;
   return `<div class="card"><h3>Panorama del año ${y}</h3>
-   <div class="tb" style="margin-bottom:10px"><button onclick="RY--;render()">‹</button><b style="min-width:44px;text-align:center">${y}</b><button onclick="RY++;render()">›</button>${y!==NOW.getFullYear()?'<button onclick="RY=NOW.getFullYear();render()">Este año</button>':''}
+   <div class="tb" style="margin-bottom:10px">
+    <button onclick="RY--;render()">‹</button><b style="min-width:44px;text-align:center">${y}</b><button onclick="RY++;render()">›</button>
+    ${y!==NOW.getFullYear()?'<button onclick="RY=NOW.getFullYear();render()">Este año</button>':''}
     <select onchange="RT=this.value;render()">${[['V','Vacaciones'],['G','Guardias'],['F','Francos']].map(([k,l])=>`<option value="${k}" ${k===ty?'selected':''}>${l}</option>`).join('')}</select>
-    <span class="mut">Cada columna es una semana (lunes a domingo) y el número es la cantidad de días. Pasá el mouse por una celda para ver las fechas.</span></div>
-   <div class="gw"><table class="yr">${head}<tbody>${body||'<tr><td style="padding:20px">No hay personas en esta vista.</td></tr>'}</tbody><tfoot>${foot}</tfoot></table></div></div>`;
+    <div style="display:inline-flex;gap:4px;align-items:center;margin-left:10px;border-left:1px solid #DCE5F0;padding-left:10px">
+      <span class="mut" style="font-weight:600">Zoom:</span>
+      <button onclick="zoomYr(-0.1)" title="Reducir zoom">-</button>
+      <button onclick="zoomYr(0.1)" title="Aumentar zoom">+</button>
+      <button onclick="resetYrZoom()" title="Tamaño por defecto">Restablecer</button>
+    </div>
+    <span class="mut">Usa la ruedita del mouse sobre la tabla para ampliar/alejar el zoom.</span>
+   </div>
+   <div class="yr-container" id="yrContainer" onwheel="yrWheel(event)" style="--yr-zoom:${YR_ZOOM}">
+    <table class="yr">${head}<tbody>${body||'<tr><td style="padding:20px">No hay personas en esta vista.</td></tr>'}</tbody><tfoot>${foot}</tfoot></table>
+   </div></div>`;
 }
+
 function vRes(){
   const{y,m}=YM,t=todayS(),ps=visible();
   const st=ps.map(p=>({p,s:stats(p.id,y,m),td:todayInfo(p,t),e:dayOf(p.id,t)||{}}));
@@ -808,7 +839,6 @@ function vRes(){
   const hoy=DB.groups.filter(g=>st.some(x=>x.p.g===g)).map(g=>`<div class="gcard"><h4><span>${E(g)}</span><span>${st.filter(x=>x.p.g===g).length}</span></h4>${st.filter(x=>x.p.g===g).map(x=>`<div class="pr ${x.p.id===SID?'mine':''}"><span class="n">${E(nm(x.p))}</span><span class="tags">${typeChip(x.td.t,E(x.td.txt))}${x.e.g?typeChip('G','Guardia'):''}${x.e.h?typeChip('H','+'+fh(x.e.h)+' h'):''}</span></div>`).join('')}</div>`).join('');
   const he=st.filter(x=>x.s.H>0).sort((a,b)=>b.s.H-a.s.H).slice(0,10),hmax=he.length?he[0].s.H:1;
   const heHtml=he.length?he.map(x=>`<div class="hrow"><div><span>${E(nm(x.p))}</span><b>${fh(x.s.H)} h</b></div><div class="bar"><i style="width:${x.s.H/hmax*100}%"></i></div></div>`).join(''):'<p class="mut">Nadie cargó horas extras en este mes.</p>';
-  /* próximos 14 días */
   const up=[],base=new Date();
   for(const p of ps){
     for(const ty of ['V','G','F']){
@@ -832,7 +862,7 @@ function vRes(){
 
 /* ---------- VISTA: Calendario ---------- */
 function vCal(){
-  const{y,m}=YM,n=dim(y,m),t=todayS(),ps=visible(),mp=me();
+  const{y,m}=YM,n=dim(y,m),t=todayS(),ps=visible();
   const days=[...Array(n)].map((_,i)=>{const d=i+1,w=new Date(y,m,d).getDay(),s=iso(y,m,d);return{d,w,s,h:holOf(s)};});
   const head=`<tr><th class="r">Persona</th>${days.map(x=>`<th class="${x.s===t?'today':''} ${dc(x)}" ${x.h?`title="${E(x.h.n)}"`:''}>${x.d}<small>${DOW[x.w]}</small></th>`).join('')}<th class="tot">Vac.</th><th class="tot">Guar.</th><th class="tot">H.E.</th><th class="tot">Fra.</th></tr>`;
   let body='';
@@ -856,7 +886,7 @@ function vCal(){
     <button class="pri" onclick="openRange()">Cargar varios días…</button>
     <button onclick="YM.m--;if(YM.m<0){YM.m=11;YM.y--;}SCR=1;render()">‹</button><button onclick="YM.m++;if(YM.m>11){YM.m=0;YM.y++;}SCR=1;render()">›</button>
     <span class="sp"></span><span class="mut">Tus totales de ${MESES[m].toLowerCase()}: <b>${my.V}</b> vac. · <b>${my.G}</b> guardias · <b>${fh(my.H)}</b> h.e. · <b>${my.F}</b> francos</span></div>
-   <div class="tb">${legend}<span class="mut">Tocá un día de tu fila para cargar o quitar. Podés ver todo, pero solo modificar lo tuyo${isAdmin()?' (como administrador podés editar a todos)':''}.</span></div>
+   <div class="tb">${legend}<span class="mut">Tocá un día de tu fila para cargar o quitar. Modificaciones se guardan automáticamente.</span></div>
    <div class="gw"><table class="cal"><thead>${head}</thead><tbody>${body||'<tr><td style="padding:20px">No hay personas en esta vista.</td></tr>'}</tbody><tfoot>${foot}</tfoot></table></div>`;
 }
 
@@ -872,7 +902,7 @@ function vHor(){
        <td class="n">${p.ent?addT(p.ent,p.jd)||'—':'—'}</td><td>${typeChip(ti.t,E(ti.txt))}${e.s?' <span class="mut">(horario especial)</span>':''}</td><td>${E(p.em||'')}</td></tr>`;
     }).join('');
   }).join('');
-  return `<div class="card"><h3>Horarios de trabajo</h3><p class="mut" style="margin-top:-6px">La jornada viene de la planilla de personal. Cada persona define su <b>hora de entrada habitual</b> y la salida se calcula sola. Para un día distinto, cargalo en el Calendario como “Horario (día puntual)”.</p>
+  return `<div class="card"><h3>Horarios de trabajo</h3><p class="mut" style="margin-top:-6px">La jornada viene de la planilla de personal. Cada persona define su <b>hora de entrada habitual</b> y la salida se calcula sola.</p>
    <div class="scr"><table class="t"><thead><tr><th>Persona</th><th class="n">Jornada (horas)</th><th class="n">Entrada habitual</th><th class="n">Salida</th><th>Hoy (${fmtD(t)})</th><th>Correo</th></tr></thead><tbody>${rows||'<tr><td colspan="6">No hay personas en esta vista.</td></tr>'}</tbody></table></div></div>`;
 }
 
@@ -897,7 +927,7 @@ function vPer(){
    <div class="card"><h3>Mis totales · ${MESES[m]} ${y}</h3><div class="row">${typeChip('V','Vacaciones: '+s.V+' días')}${typeChip('G','Guardias: '+s.G)}${typeChip('H','Horas extras: '+fh(s.H)+' h')}${typeChip('F','Francos: '+s.F)}</div></div>`;
 }
 
-/* ---------- VISTA: Administración de personal ---------- */
+/* ---------- VISTA: Administración (con pestaña EXCEL restaurada) ---------- */
 function vAdm(){
   if(!isAdmin())return '<div class="card">Acceso restringido.</div>';
   const tabs=`<div class="tabs"><button class="${PT==='p'?'on':''}" onclick="PT='p';render()">Personas (${Object.keys(DB.people).length})</button><button class="${PT==='g'?'on':''}" onclick="PT='g';render()">Grupos (${DB.groups.length})</button><button class="${PT==='h'?'on':''}" onclick="PT='h';render()">Feriados</button><button class="${PT==='x'?'on':''}" onclick="PT='x';render()">Excel</button></div>`;
@@ -905,16 +935,16 @@ function vAdm(){
   if(PT==='x'){
     return tabs+`<div class="card"><h3>Excel</h3>
      <p class="mut" style="margin-top:-6px">Exportá todo lo cargado cuando quieras, o subí un Excel para cargar o actualizar datos de una sola vez.</p>
-     <div class="grid2"><div class="gcard"><h4><span>Exportar</span></h4><p class="mut">Genera un .xlsx con las hojas Eventos (vacaciones, guardias, horas extras, francos y horarios día por día), Personal, Resumen mensual${isOwner()?' y Registro':''}.</p><button class="pri" onclick="exportXlsx()">Descargar Excel</button></div>
-     <div class="gcard"><h4><span>Importar</span></h4><p class="mut">Sube un .xlsx con las hojas Eventos y/o Personal. Te muestro un resumen antes de aplicar. Lo más fácil: exportá, editá en Excel y volvé a importar.</p><button class="pri" onclick="openImport()">Importar Excel…</button></div></div></div>`;
+     <div class="grid2"><div class="gcard"><h4><span>Exportar</span></h4><p class="mut" style="padding:10px">Genera un .xlsx con las hojas Eventos (vacaciones, guardias, horas extras, francos y horarios día por día), Personal, Resumen mensual${isOwner()?' y Registro':''}.</p><div style="padding:10px"><button class="pri" onclick="exportXlsx()">Descargar Excel</button></div></div>
+     <div class="gcard"><h4><span>Importar</span></h4><p class="mut" style="padding:10px">Sube un .xlsx con las hojas Eventos y/o Personal. Te muestro un resumen antes de aplicar. Lo más fácil: exportá, editá en Excel y volvé a importar.</p><div style="padding:10px"><button class="pri" onclick="openImport()">Importar Excel…</button></div></div></div></div>`;
   }
   if(PT==='h'){
     const hy=HY||YM.y,H=holYear(hy),ks=Object.keys(H).sort(),wd=['dom','lun','mar','mié','jue','vie','sáb'];
     return tabs+`<div class="card"><h3>Feriados de Argentina · ${hy}</h3>
-     <p class="mut" style="margin-top:-6px">Se calculan solos para cualquier año (fijos, trasladables, Carnaval y Semana Santa). Los días “puente” se deciden por decreto cada año: cargalos acá. Podés quitar o agregar cualquier fecha.</p>
+     <p class="mut" style="margin-top:-6px">Se calculan solos para cualquier año. Podés quitar o agregar cualquier fecha.</p>
      <div class="row" style="margin-bottom:12px"><button onclick="HY=(HY||YM.y)-1;render()">‹</button><b style="font-size:16px">${hy}</b><button onclick="HY=(HY||YM.y)+1;render()">›</button></div>
      <div class="scr"><table class="t"><thead><tr><th style="width:140px">Fecha</th><th>Nombre</th><th>Tipo</th><th>Origen</th><th></th></tr></thead><tbody>${ks.map(k=>{const h=H[k],d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8));return `<tr class="${h.del?'off':''}"><td><b>${fmtD(k)}</b> <span class="mut">${wd[d.getDay()]}</span></td><td>${h.del?'<s>'+E(h.n)+'</s>':E(h.n)}</td><td>${typeChip(h.t==='nl'?'H':'R',h.t==='nl'?'No laborable':'Feriado')}</td><td class="mut">${h.src==='calc'?(h.del?'Calculado (quitado)':'Calculado'):h.src==='mod'?'Modificado':'Cargado'}</td><td class="n">${h.del?`<button data-d="${k}" onclick="restHol(this.dataset.d)">Restaurar</button>`:`<button class="dng" data-d="${k}" onclick="delHol(this.dataset.d)">Quitar</button>`}</td></tr>`;}).join('')}</tbody></table></div>
-     <div class="row" style="margin-top:14px"><input id="hd" type="date" value="${hy}-01-01"><input id="hn" type="text" placeholder="Nombre (ej: Día no laborable con fines turísticos)" style="width:340px"><select id="ht"><option value="f">Feriado</option><option value="nl">Día no laborable</option></select><button class="pri" onclick="addHol()">Agregar fecha</button></div></div>`;
+     <div class="row" style="margin-top:14px"><input id="hd" type="date" value="${hy}-01-01"><input id="hn" type="text" placeholder="Nombre" style="width:340px"><select id="ht"><option value="f">Feriado</option><option value="nl">Día no laborable</option></select><button class="pri" onclick="addHol()">Agregar fecha</button></div></div>`;
   }
   if(PT==='g'){
     return tabs+`<div class="card"><h3>Grupos de trabajo</h3><table class="t" style="max-width:640px"><thead><tr><th>Nombre</th><th class="n">Personas</th><th></th></tr></thead><tbody>${DB.groups.map((g,i)=>`<tr><td><input type="text" value="${E(g)}" onchange="renGroup(${i},this.value)" style="border-color:#D0D5DD;background:#fff"></td><td class="n">${Object.values(DB.people).filter(p=>p.g===g).length}</td><td class="n"><button class="dng" onclick="delGroup(${i})">Eliminar</button></td></tr>`).join('')}</tbody></table>
@@ -924,14 +954,14 @@ function vAdm(){
    <td><select data-p="${E(p.id)}" onchange="pedit(this.dataset.p,'g',this.value)">${gopt(p.g)}</select></td><td>${jdCell(p)}</td>
    <td><select data-p="${E(p.id)}" onchange="pedit(this.dataset.p,'role',this.value)"><option value="user" ${p.role!=='admin'?'selected':''}>Usuario</option><option value="admin" ${p.role==='admin'?'selected':''}>Admin</option></select></td>
    <td class="n"><input type="checkbox" ${p.on!==false?'checked':''} ${p.id===SID?'disabled':''} data-p="${E(p.id)}" onchange="pedit(this.dataset.p,'on',this.checked)" style="width:auto"></td><td class="n"><button data-p="${E(p.id)}" onclick="resetPw(this.dataset.p)">Reiniciar clave</button></td></tr>`).join('');
-  return tabs+`<div class="row" style="margin-bottom:12px"><span class="mut">Los cambios se guardan solos. “Activo” desmarcado = baja (se conserva el historial).</span><span class="sp"></span><button class="pri" onclick="$('#addp').classList.toggle('hide')">+ Nueva persona</button></div>
+  return tabs+`<div class="row" style="margin-bottom:12px"><span class="mut">Los cambios se guardan automáticamente.</span><span class="sp"></span><button class="pri" onclick="$('#addp').classList.toggle('hide')">+ Nueva persona</button></div>
    <div id="addp" class="card hide"><h3>Alta de persona</h3><div class="row">
-     <input id="nid" type="text" placeholder="Usuario (ej: PEREZJ)" style="width:150px"><input id="nap" type="text" placeholder="Apellido"><input id="nno" type="text" placeholder="Nombre"><select id="ng">${gopt(DB.groups[0])}</select>
+     <input id="nid" type="text" placeholder="Usuario" style="width:150px"><input id="nap" type="text" placeholder="Apellido"><input id="nno" type="text" placeholder="Nombre"><select id="ng">${gopt(DB.groups[0])}</select>
      <label class="mut">Jornada</label><input id="njd" type="time" value="07:00"><button class="pri" onclick="addPerson()">Crear</button></div></div>
    <div class="scr"><table class="t"><thead><tr><th>Usuario</th><th>Apellido</th><th>Nombre</th><th>Grupo</th><th>Jornada (horas)</th><th>Rol</th><th class="n">Activo</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
-/* ---------- VISTA: Registro (solo dueño) ---------- */
+/* ---------- VISTA: Registro (con Botón de Borrado Restaurado) ---------- */
 function logRows(){
   const q=LF.q.trim().toLowerCase();
   return (DB.log||[]).filter(x=>(!LF.nologin||(x.k!=='login'&&x.k!=='logout'))&&(!LF.u||x.u===LF.u)&&(!q||x.a.toLowerCase().includes(q)||nm(DB.people[x.u]).toLowerCase().includes(q))).slice().reverse();
@@ -942,8 +972,14 @@ function vLog(){
   const kb=Math.round(JSON.stringify(DB).length/1024),pc=Math.min(100,Math.round(kb/(SUPA?3000:100)*100));
   const size=REMOTE?`<div class="row" style="margin-bottom:12px"><span class="chip ${pc>80?'cH':'cW'}">Tamaño de la base: ${kb} KB de ${SUPA?'3000':'100'} KB</span><span class="mut">El registro ocupa ${Math.round(JSON.stringify(DB.log||[]).length/1024)} KB.</span>${pc>80?'<span class="neg">Casi lleno: borrá el registro viejo.</span>':''}</div>`:'';
   return `<div class="card"><h3>Registro de actividad <span class="mut" style="font-weight:400">${rows.length} de ${(DB.log||[]).length}</span></h3>${size}
-   <div class="row" style="margin-bottom:12px"><select onchange="LF.u=this.value;render()"><option value="">Todos los usuarios</option>${us.map(u=>`<option value="${E(u)}" ${u===LF.u?'selected':''}>${E(nm(DB.people[u])||u)}</option>`).join('')}</select>
-    <input type="search" placeholder="Buscar en el registro" value="${E(LF.q)}" oninput="LF.q=this.value;logSearch()" style="width:260px"><label class="row"><input type="checkbox" ${LF.nologin?'checked':''} onchange="LF.nologin=this.checked;render()"> Ocultar ingresos y salidas</label><span class="sp"></span><button onclick="exportLog()">Exportar CSV</button><button class="dng" onclick="openDelLog()">Borrar registro…</button></div>
+   <div class="row" style="margin-bottom:12px">
+    <select onchange="LF.u=this.value;render()"><option value="">Todos los usuarios</option>${us.map(u=>`<option value="${E(u)}" ${u===LF.u?'selected':''}>${E(nm(DB.people[u])||u)}</option>`).join('')}</select>
+    <input type="search" placeholder="Buscar en el registro" value="${E(LF.q)}" oninput="LF.q=this.value;logSearch()" style="width:260px">
+    <label class="row"><input type="checkbox" ${LF.nologin?'checked':''} onchange="LF.nologin=this.checked;render()"> Ocultar ingresos y salidas</label>
+    <span class="sp"></span>
+    <button onclick="exportLog()">Exportar CSV</button>
+    <button class="dng" onclick="openDelLog()">Borrar registro…</button>
+   </div>
    <div class="scr" id="logbox">${logTable(rows)}</div></div>`;
 }
 const logTable=rows=>`<table class="t"><thead><tr><th style="width:150px">Fecha y hora</th><th style="width:230px">Usuario</th><th>Acción</th></tr></thead><tbody>${rows.slice(0,300).map(x=>`<tr><td class="mut">${new Date(x.ts).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</td><td><b>${E(nm(DB.people[x.u])||x.u)}</b></td><td>${E(x.a)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="padding:16px">Sin registros.</td></tr>'}</tbody></table>${rows.length>300?'<p class="mut" style="padding:8px 12px">Mostrando los 300 más recientes. Usá los filtros o exportá el CSV.</p>':''}`;
@@ -954,7 +990,7 @@ function exportLog(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='registro-actividad.csv';a.click();
 }
 
-/* ---------- Excel: exportar / importar (solo administradores) ---------- */
+/* ---------- Excel: exportar / importar ---------- */
 let XLP=null;
 function loadXlsx(){
   if(window.XLSX)return Promise.resolve();
@@ -981,10 +1017,10 @@ async function exportXlsx(){
   const sRs=W.aoa_to_sheet(rs);sRs['!cols']=[{wch:14},{wch:30},{wch:16},{wch:7},{wch:12},{wch:17},{wch:10},{wch:13},{wch:9}];
   const lee=[['Cómo usar este archivo'],[''],
    ['Hoja "Eventos": una fila por persona y día. Tipo = Vacaciones o Franco (o vacío). Guardia = SI (o vacío). Horas extras = número. Horario especial = HH:MM.'],
-   ['Fecha: AAAA-MM-DD (también se acepta DD/MM/AAAA o una fecha de Excel).'],
-   ['Hoja "Personal": Usuario, Apellido, Nombre, Grupo, Jornada (horas), Entrada habitual, Email, Activo. Un usuario nuevo se crea con clave = su usuario.'],
-   ['Hoja "Resumen mensual": solo informativa, se ignora al importar.'],
-   ['Para importar: Administración > Excel > Importar. Las hojas Eventos y Personal son opcionales.']];
+   ['Fecha: AAAA-MM-DD.'],
+   ['Hoja "Personal": Usuario, Apellido, Nombre, Grupo, Jornada (horas), Entrada habitual, Email, Activo.'],
+   ['Hoja "Resumen mensual": informativa.'],
+   ['Para importar: Administración > Excel > Importar.']];
   const sL=W.aoa_to_sheet(lee);sL['!cols']=[{wch:140}];
   W.book_append_sheet(wb,sEv,'Eventos');W.book_append_sheet(wb,sPe,'Personal');W.book_append_sheet(wb,sRs,'Resumen mensual');
   if(isOwner()){const lg=[['Fecha y hora','Usuario','Acción']];(DB.log||[]).forEach(x=>lg.push([new Date(x.ts).toLocaleString('es-AR'),nm(DB.people[x.u]),x.a]));
@@ -1019,7 +1055,7 @@ let IMP=null;
 function openImport(){
   if(!isAdmin())return;
   openModal(`<h3>Importar Excel</h3>
-   <p class="mut">Elegí un archivo .xlsx con las hojas <b>Eventos</b> y/o <b>Personal</b> (podés partir de uno exportado desde acá). Antes de aplicar nada vas a ver un resumen.</p>
+   <p class="mut">Elegí un archivo .xlsx con las hojas <b>Eventos</b> y/o <b>Personal</b>.</p>
    <div class="fg"><label>Archivo</label><input type="file" id="xf" accept=".xlsx,.xls" onchange="readImport(this.files[0])"></div>
    <div id="xprev"></div>
    <div class="macts"><button onclick="IMP=null;closeModal()">Cerrar</button></div>`,true);
@@ -1042,7 +1078,7 @@ async function readImport(file){
       const j=r.jornadahoras!==undefined?r.jornadahoras:r.jornada;
       if(j!==''&&j!==undefined){const h=typeof j==='number'?j:parseFloat(String(j).replace(',','.'));
         if(typeof j==='string'&&/^\d{1,2}:\d{2}$/.test(j.trim()))o.jd=p2(+j.trim().split(':')[0])+':'+j.trim().split(':')[1];
-        else if(h>=1&&h<=16)o.jd=hm(Math.round(h*60));else return errs.push(`Personal, fila ${n}: jornada "${j}" no válida (1 a 16 horas)`);}
+        else if(h>=1&&h<=16)o.jd=hm(Math.round(h*60));else return errs.push(`Personal, fila ${n}: jornada "${j}" no válida`);}
       if(r.entradahabitual!==''&&r.entradahabitual!==undefined){const t=xlTime(r.entradahabitual);if(t===null)return errs.push(`Personal, fila ${n}: entrada "${r.entradahabitual}" no válida`);o.ent=t;}
       if(r.activo!==''&&r.activo!==undefined)o.on=!/^(no|n|0|false)$/i.test(hkey(r.activo));
       const ex=DB.people[id];
@@ -1056,7 +1092,7 @@ async function readImport(file){
       if(!known.has(id))return errs.push(`Eventos, fila ${n}: el usuario "${id||'(vacío)'}" no existe`);
       const d=xlDate(r.fecha);if(!d)return errs.push(`Eventos, fila ${n}: fecha "${r.fecha}" no válida`);
       const e={},t=hkey(r.tipo);
-      if(t){if(t.startsWith('vac'))e.a='V';else if(t.startsWith('fra'))e.a='F';else return errs.push(`Eventos, fila ${n}: tipo "${r.tipo}" no válido (Vacaciones o Franco)`);}
+      if(t){if(t.startsWith('vac'))e.a='V';else if(t.startsWith('fra'))e.a='F';else return errs.push(`Eventos, fila ${n}: tipo "${r.tipo}" no válido`);}
       if(yes(r.guardia))e.g=1;
       if(r.horasextras!==''&&r.horasextras!==undefined){const h=parseFloat(String(r.horasextras).replace(',','.'));if(!(h>0&&h<=24))return errs.push(`Eventos, fila ${n}: horas extras "${r.horasextras}" no válidas`);e.h=h;}
       if(r.horarioespecial!==''&&r.horarioespecial!==undefined){const s=xlTime(r.horarioespecial);if(s===null)return errs.push(`Eventos, fila ${n}: horario "${r.horarioespecial}" no válido`);e.s=s;}
@@ -1078,8 +1114,8 @@ async function readImport(file){
 function applyImport(){
   if(!isAdmin()||!IMP)return;
   const replace=$('#xm')&&$('#xm').value==='r';
-  if(replace&&!confirm('Vas a BORRAR todos los eventos que no estén en el Excel (vacaciones, guardias, horas extras, francos). ¿Continuar?'))return;
-  let cPe=0,nNew=0,days=0,chg=0;
+  if(replace&&!confirm('Vas a BORRAR todos los eventos que no estén en el Excel. ¿Continuar?'))return;
+  let cPe=0,nNew=0,days=0;
   IMP.newGroups.forEach(g=>{DB.groups.push(g);D.gr=true;});
   IMP.pers.forEach(o=>{
     let p=DB.people[o.id];
@@ -1099,14 +1135,15 @@ function applyImport(){
     if(JSON.stringify(nx)!==JSON.stringify(cur)){DB.ev[id]=nx;D.ev.add(id);}
     days+=Object.keys(by[id]).length;
   });
-  logTxt(`Importó el Excel "${IMP.name}" (${replace?'reemplazando':'actualizando'}): ${days} días de ${Object.keys(by).length} personas, ${nNew} personas nuevas, ${cPe} personas modificadas`);
+  logTxt(`Importó el Excel "${IMP.name}"`);
   const msg=`Importación lista: ${days} días, ${nNew} nuevas, ${cPe} modificadas`;IMP=null;closeModal();render();flush();toast(msg);
 }
+
 /* ---------- borrar registro ---------- */
 function openDelLog(){
   if(!isOwner())return;
   const n=(DB.log||[]).length,kb=Math.round(JSON.stringify(DB.log||[]).length/1024);
-  openModal(`<h3>Borrar registro</h3><p>El registro tiene <b>${n}</b> entradas (<b>${kb} KB</b>). Esto no se puede deshacer: conviene <a href="#" onclick="exportLog();return false">exportarlo a CSV</a> antes.</p>
+  openModal(`<h3>Borrar registro</h3><p>El registro tiene <b>${n}</b> entradas (<b>${kb} KB</b>). Se recomienda <a href="#" onclick="exportLog();return false">exportarlo a CSV</a> antes.</p>
    <div class="fg"><label>Qué borrar</label><select id="dlm"><option value="30">Anteriores a 30 días</option><option value="90">Anteriores a 90 días</option><option value="180">Anteriores a 6 meses</option><option value="all">Todo el registro</option></select></div>
    <div class="macts"><button onclick="closeModal()">Cancelar</button><button class="dng" onclick="doDelLog()">Borrar</button></div>`);
 }
