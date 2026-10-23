@@ -382,7 +382,7 @@ function todayInfo(p,d){
 }
 
 /* ---------- registro de acciones (log) ---------- */
-function queueSave(){clearTimeout(saveT);SYNC='dirty';renderSync();saveT=setTimeout(flush,4000);}
+function queueSave(){clearTimeout(saveT);SYNC='dirty';renderSync();saveT=setTimeout(flush,500);}
 function rec(k,t,pid,d,x){PEND.push({ts:new Date().toISOString(),u:SID,k,t,p:pid,d,x});queueSave();}
 function logTxt(a){PEND.push({ts:new Date().toISOString(),u:SID,k:'txt',a});queueSave();}
 function rangeText(ds){
